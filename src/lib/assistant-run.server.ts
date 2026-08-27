@@ -310,8 +310,16 @@ async function analyseContacts(
   }
   if (grouped.size === 0) return { analyzed: 0, suggestions: 0, tokensIn: 0, tokensOut: 0 };
 
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("full_name, email")
+    .eq("id", userId)
+    .maybeSingle();
+  const owner = [profile?.full_name, profile?.email].filter(Boolean).join(", ") || "de eigenaar van deze mailbox";
+
   const gateway = createLovableAiGatewayProvider(lovableApiKey, undefined, { structuredOutputs: true });
   const model = gateway(pickModel(settings.ai_model));
+
 
   let analyzed = 0;
   let suggestions = 0;
