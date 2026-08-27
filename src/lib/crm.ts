@@ -75,7 +75,6 @@ export const STAGE_META: Record<Stage, { label: string; hint: string; tone: stri
     tone: "bg-success/25 text-success",
   },
   cold: {
-  cold: {
     label: "Koud",
     hint: "Geen reactie of nu geen interesse - later opnieuw proberen",
     tone: "bg-muted text-muted-foreground",
