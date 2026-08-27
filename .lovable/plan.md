@@ -59,6 +59,18 @@ GPT-mini-klasse             ca. €5 - €12 per maand
 Frontier-model (GPT-5.x)    ca. €25 - €60 per maand
 ```
 
+In Lovable-credits (als je niet je eigen Gemini-key gebruikt), zelfde volume per maand:
+
+```text
+Gemini Flash Lite / Flash   enkele credits, grotendeels gedekt door
+                            de gratis AI-toelage van 4 credits/maand
+Mini-klasse model           ca. 10 - 25 credits per maand
+Frontier-model (GPT-5.x)    ca. 50 - 150 credits per maand
+```
+
+Dit is alleen de runtime-AI, los van de credits voor het bouwen. De app krijgt een tokenteller en een maandplafond zodat dit nooit ongemerkt oploopt.
+```
+
 Voorstel: standaard een goedkoop, snel model (Gemini Flash Lite-klasse) voor de dagelijkse triage, en alleen voor het schrijven van een concept-mail eventueel een sterker model. Dan blijf je in de praktijk rond €2-6 per maand.
 
 ### Waarom niet je Claude- of Gemini-abonnement
