@@ -2,7 +2,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Stage, Track } from "@/lib/crm";
-import { pushDraftsToGmail, pushTasksToTodoist, runAssistant } from "@/lib/assistant.functions";
+import {
+  generateNudgeDraft,
+  pushDraftsToGmail,
+  pushTasksToTodoist,
+  runAssistant,
+} from "@/lib/assistant.functions";
+
 
 export type Contact = {
   id: string;
