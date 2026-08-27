@@ -9,6 +9,7 @@ export const STAGES = [
   "customer",
   "repeat_customer",
   "cold",
+  "lost",
 ] as const;
 
 export type Stage = (typeof STAGES)[number];
