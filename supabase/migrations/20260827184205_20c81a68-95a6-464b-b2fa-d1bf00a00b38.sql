@@ -1,0 +1,1 @@
+ALTER TYPE public.crm_stage ADD VALUE IF NOT EXISTS 'lost';

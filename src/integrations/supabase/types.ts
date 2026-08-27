@@ -668,6 +668,7 @@ export type Database = {
         | "customer"
         | "repeat_customer"
         | "cold"
+        | "lost"
       draft_status: "pending" | "created" | "failed" | "discarded"
       next_step_owner: "me" | "them" | "none"
       suggestion_status: "pending" | "approved" | "rejected" | "expired"
@@ -821,6 +822,7 @@ export const Constants = {
         "customer",
         "repeat_customer",
         "cold",
+        "lost",
       ],
       draft_status: ["pending", "created", "failed", "discarded"],
       next_step_owner: ["me", "them", "none"],
