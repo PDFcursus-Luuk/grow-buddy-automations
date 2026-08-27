@@ -331,6 +331,7 @@ async function analyseContacts(
       .join("\n\n");
 
     const prompt = [
+      `Je werkt als assistent VOOR mij (${owner}). Ik ben de trainer/verkoper; het contact is de klant.`,
       `Bedrijfscontext: ${settings.business_context}`,
       `Pipelinefases (in volgorde): ${STAGES.join(", ")}`,
       `Contact: ${contact.full_name} (${contact.email ?? "geen e-mail"})`,
@@ -344,10 +345,16 @@ async function analyseContacts(
       "",
       "Beoordeel dit. Antwoord in het Nederlands. Houd de samenvatting onder 60 woorden.",
       "Stel alleen een fase voor als de correspondentie dat duidelijk onderbouwt, anders null.",
-      "Stel een concept-mail voor (draft_needed=true) als een reactie van mij logisch is; houd die onder 150 woorden en gebruik de tone-of-voice.",
+      "Regels voor het concept (draft_needed):",
+      `- Het concept wordt door MIJ (${owner}) geschreven en is gericht AAN ${contact.full_name}. Nooit andersom: schrijf nooit een mail alsof het contact mij antwoordt, en adresseer het concept nooit aan mij.`,
+      "- Begin met een aanhef aan het contact, niet met 'Beste Luuk'.",
+      "- Verzin NOOIT feiten, bedragen, data, toezeggingen of gebeurtenissen die niet letterlijk in de correspondentie of notities hierboven staan. Bij twijfel: stel een korte vraag in plaats van een aanname.",
+      "- Zet draft_needed=false als een reactie van mij niet logisch is of als je te weinig informatie hebt.",
+      "- Houd het concept onder 150 woorden en volg de tone-of-voice.",
     ]
       .filter(Boolean)
       .join("\n");
+
 
     try {
       const result = await generateText({
