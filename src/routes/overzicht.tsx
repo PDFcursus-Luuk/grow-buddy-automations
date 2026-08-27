@@ -147,8 +147,9 @@ function OverviewPage() {
         </TabsContent>
 
         <TabsContent value="stil" className="mt-6">
-          <ContactTable contacts={stale} empty="Niets staat te lang stil. Netjes." />
+          <ContactTable contacts={stale} empty="Niets staat te lang stil. Netjes." withDraft />
         </TabsContent>
+
 
         <TabsContent value="taken" className="mt-6 space-y-2">
           {(tasks.data ?? []).length === 0 ? (
