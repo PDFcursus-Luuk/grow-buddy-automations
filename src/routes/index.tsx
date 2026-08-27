@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   AlarmClock,
@@ -6,10 +7,12 @@ import {
   Inbox,
   ListChecks,
   Mail,
+  Pencil,
   MoveRight,
   RefreshCw,
   Send,
   Sparkles,
+  Trash2,
   Users,
   X,
 } from "lucide-react";
@@ -20,8 +23,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
   useCompleteTask,
+  useDeleteDraft,
   useNudgeDraft,
+  useUpdateDraft,
 
   useContacts,
   useDrafts,
@@ -33,6 +49,7 @@ import {
   useSettings,
   useTasks,
   type Contact,
+  type EmailDraft,
   type Suggestion,
 } from "@/hooks/useCrmData";
 import { STAGE_META, daysSince, formatDate, formatDateTime, stageLabel } from "@/lib/crm";
@@ -227,22 +244,11 @@ function TodayPage() {
         ) : (
           <div className="divide-y divide-border rounded-lg border border-border bg-card">
             {drafts.data!.map((d) => (
-              <div key={d.id} className="space-y-1 p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant={d.status === "created" ? "secondary" : d.status === "failed" ? "destructive" : "outline"}>
-                    {d.status === "created" ? "In mailbox" : d.status === "failed" ? "Mislukt" : "Klaar om te zetten"}
-                  </Badge>
-                  <p className="text-sm font-medium">{d.subject}</p>
-                  <span className="ml-auto text-xs text-muted-foreground">
-                    {d.contacts?.full_name ?? "Onbekend"} · {formatDateTime(d.created_at)}
-                  </span>
-                </div>
-                <p className="line-clamp-2 text-xs whitespace-pre-wrap text-muted-foreground">{d.body}</p>
-                {d.error && <p className="text-xs text-destructive">{d.error}</p>}
-              </div>
+              <DraftRow key={d.id} draft={d} />
             ))}
           </div>
         )}
+
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -337,6 +343,8 @@ function Stat({
 function StaleRow({ contact }: { contact: Contact }) {
   const days = daysSince(contact.last_contact_at ?? contact.created_at);
   const nudge = useNudgeDraft();
+  const drafts = useDrafts();
+  const hasDraft = (drafts.data ?? []).some((d) => d.contact_id === contact.id);
   return (
     <div className="flex items-center gap-3 p-4 transition-colors hover:bg-secondary/50">
       <Link
@@ -353,13 +361,112 @@ function StaleRow({ contact }: { contact: Contact }) {
       <Button
         size="sm"
         variant="outline"
-        disabled={!contact.email || nudge.isPending}
+        disabled={!contact.email || nudge.isPending || hasDraft}
         onClick={() => nudge.mutate(contact.id)}
-        title={contact.email ? "AI-concept opstellen" : "Geen e-mailadres bekend"}
+        title={
+          !contact.email
+            ? "Geen e-mailadres bekend"
+            : hasDraft
+              ? "Er staat al een concept klaar voor dit contact"
+              : "AI-concept opstellen"
+        }
       >
-        <Sparkles className="mr-1.5 size-3.5" /> Concept
+        <Sparkles className="mr-1.5 size-3.5" /> {hasDraft ? "Concept klaar" : "Concept"}
       </Button>
     </div>
   );
 }
 
+
+function DraftRow({ draft }: { draft: EmailDraft }) {
+  const [open, setOpen] = useState(false);
+  const [subject, setSubject] = useState(draft.subject);
+  const [body, setBody] = useState(draft.body);
+  const update = useUpdateDraft();
+  const remove = useDeleteDraft();
+
+  return (
+    <div className="space-y-2 p-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge
+          variant={draft.status === "created" ? "secondary" : draft.status === "failed" ? "destructive" : "outline"}
+        >
+          {draft.status === "created" ? "In mailbox" : draft.status === "failed" ? "Mislukt" : "Klaar om te zetten"}
+        </Badge>
+        <p className="text-sm font-medium">{draft.subject}</p>
+        <span className="ml-auto text-xs text-muted-foreground">
+          {draft.contacts?.full_name ?? "Onbekend"} · {formatDateTime(draft.created_at)}
+        </span>
+      </div>
+      <p className="line-clamp-2 text-xs whitespace-pre-wrap text-muted-foreground">{draft.body}</p>
+      {draft.error && <p className="text-xs text-destructive">{draft.error}</p>}
+      <div className="flex items-center gap-2">
+        <Dialog
+          open={open}
+          onOpenChange={(next) => {
+            setOpen(next);
+            if (next) {
+              setSubject(draft.subject);
+              setBody(draft.body);
+            }
+          }}
+        >
+          <DialogTrigger asChild>
+            <Button size="sm" variant="ghost" disabled={draft.status === "created"}>
+              <Pencil className="mr-1.5 size-3.5" /> Aanpassen
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Concept aanpassen</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor={`subject-${draft.id}`}>Onderwerp</Label>
+                <Input
+                  id={`subject-${draft.id}`}
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor={`body-${draft.id}`}>Bericht</Label>
+                <Textarea
+                  id={`body-${draft.id}`}
+                  rows={14}
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setOpen(false)}>
+                Annuleren
+              </Button>
+              <Button
+                disabled={update.isPending || !subject.trim() || !body.trim()}
+                onClick={() =>
+                  update.mutate(
+                    { id: draft.id, subject: subject.trim(), body: body.trim() },
+                    { onSuccess: () => setOpen(false) },
+                  )
+                }
+              >
+                Opslaan
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="text-destructive hover:text-destructive"
+          disabled={remove.isPending}
+          onClick={() => remove.mutate(draft.id)}
+        >
+          <Trash2 className="mr-1.5 size-3.5" /> Verwijderen
+        </Button>
+      </div>
+    </div>
+  );
+}
