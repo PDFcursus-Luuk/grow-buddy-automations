@@ -25,6 +25,16 @@ export async function generateNudgeDraftForContact(userId: string, contactId: st
   if (!contact) throw new Error("Contact niet gevonden");
   if (!contact.email) throw new Error("Dit contact heeft geen e-mailadres");
 
+  const { data: existing } = await supabaseAdmin
+    .from("email_drafts")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("contact_id", contactId)
+    .in("status", ["pending", "created"])
+    .limit(1)
+    .maybeSingle();
+  if (existing) throw new Error("Er staat al een concept klaar voor dit contact");
+
   const { data: settings } = await supabaseAdmin
     .from("crm_settings")
     .select("tone_of_voice, signature, business_context, ai_model")
