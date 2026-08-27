@@ -4,8 +4,11 @@ import {
   ArrowRight,
   Check,
   Inbox,
+  ListChecks,
   Mail,
   MoveRight,
+  RefreshCw,
+  Send,
   Sparkles,
   Users,
   X,
@@ -19,14 +22,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   useCompleteTask,
   useContacts,
+  useDrafts,
   usePendingSuggestions,
+  usePushDrafts,
+  usePushTasks,
   useResolveSuggestion,
+  useRunAssistant,
   useSettings,
   useTasks,
   type Contact,
   type Suggestion,
 } from "@/hooks/useCrmData";
-import { STAGE_META, daysSince, formatDate, stageLabel } from "@/lib/crm";
+import { STAGE_META, daysSince, formatDate, formatDateTime, stageLabel } from "@/lib/crm";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -65,6 +72,10 @@ function TodayPage() {
   const settings = useSettings();
   const resolve = useResolveSuggestion();
   const complete = useCompleteTask();
+  const run = useRunAssistant();
+  const drafts = useDrafts();
+  const pushDrafts = usePushDrafts();
+  const pushTasks = usePushTasks();
 
   const silenceDays = settings.data?.silence_days ?? 14;
   const list = contacts.data ?? [];
@@ -90,7 +101,13 @@ function TodayPage() {
             Je assistent leest mail en notities, en legt hier voorstellen neer. Jij keurt goed.
           </p>
         </div>
-        <ContactFormDialog />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" disabled={run.isPending} onClick={() => run.mutate()}>
+            <RefreshCw className={`mr-1.5 size-4 ${run.isPending ? "animate-spin" : ""}`} />
+            {run.isPending ? "Assistent leest mee…" : "Nu draaien"}
+          </Button>
+          <ContactFormDialog />
+        </div>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -187,6 +204,45 @@ function TodayPage() {
         )}
       </section>
 
+      <section className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-2xl">Mailconcepten</h2>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={pushDrafts.isPending}
+            onClick={() => pushDrafts.mutate()}
+          >
+            <Send className="mr-1.5 size-4" /> Zet in mijn mailbox
+          </Button>
+        </div>
+        {drafts.isLoading ? (
+          <Skeleton className="h-24 w-full" />
+        ) : (drafts.data?.length ?? 0) === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Nog geen concepten. Keur een mailvoorstel goed, dan komt het hier en daarna in je mailbox.
+          </p>
+        ) : (
+          <div className="divide-y divide-border rounded-lg border border-border bg-card">
+            {drafts.data!.map((d) => (
+              <div key={d.id} className="space-y-1 p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant={d.status === "created" ? "secondary" : d.status === "failed" ? "destructive" : "outline"}>
+                    {d.status === "created" ? "In mailbox" : d.status === "failed" ? "Mislukt" : "Klaar om te zetten"}
+                  </Badge>
+                  <p className="text-sm font-medium">{d.subject}</p>
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    {d.contacts?.full_name ?? "Onbekend"} · {formatDateTime(d.created_at)}
+                  </span>
+                </div>
+                <p className="line-clamp-2 text-xs whitespace-pre-wrap text-muted-foreground">{d.body}</p>
+                {d.error && <p className="text-xs text-destructive">{d.error}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="space-y-4">
           <h2 className="text-2xl">Te lang stil</h2>
@@ -204,7 +260,17 @@ function TodayPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-2xl">Open taken</h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-2xl">Open taken</h2>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={pushTasks.isPending}
+              onClick={() => pushTasks.mutate()}
+            >
+              <ListChecks className="mr-1.5 size-4" /> Naar Todoist
+            </Button>
+          </div>
           {tasks.isLoading ? (
             <Skeleton className="h-40 w-full" />
           ) : (tasks.data?.length ?? 0) === 0 ? (

@@ -38,10 +38,9 @@ export const Route = createFileRoute("/instellingen")({
 });
 
 const MODELS = [
-  { value: "google/gemini-3.1-flash-lite", label: "Gemini 3.1 Flash Lite — goedkoopst" },
-  { value: "google/gemini-3.7-flash", label: "Gemini 3.7 Flash — sneller en scherper" },
-  { value: "openai/gpt-5.4-nano", label: "GPT-5.4 Nano — goedkoop alternatief" },
-  { value: "openai/gpt-5.4-mini", label: "GPT-5.4 Mini — beste tekstkwaliteit" },
+  { value: "google/gemini-3.1-flash-lite", label: "Flash Lite — goedkoopst, ruim genoeg" },
+  { value: "google/gemini-3.7-flash", label: "Flash — scherper voor mailconcepten" },
+  { value: "google/gemini-3.1-pro-preview", label: "Pro — beste kwaliteit, duurder" },
 ];
 
 function SettingsPage() {
