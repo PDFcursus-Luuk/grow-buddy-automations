@@ -45,7 +45,7 @@ export const STAGE_META: Record<Stage, { label: string; hint: string; tone: stri
     tone: "bg-warning/20 text-warning-foreground",
   },
   training_scheduled: {
-    label: "Training ingeplland",
+    label: "Training ingepland",
     hint: "Datum staat, voorbereiding loopt",
     tone: "bg-primary/15 text-primary",
   },
