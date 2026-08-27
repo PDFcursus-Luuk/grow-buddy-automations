@@ -97,9 +97,9 @@ Ik bouw de AI-laag daarom achter één schakelaar: **eigen Gemini-key** (standaa
 - Gmail-connector (gateway) voor `users.messages.list/get`, `users.drafts.create` (incl. `threadId` zodat de draft in de juiste thread staat) en labels. Superhuman leest Gmail, dus drafts verschijnen daar automatisch — geen Superhuman-API nodig.
 - Google Drive-connector voor `files.list` op een gekozen map met `modifiedTime`-filter; Google Docs via export naar tekst, `.txt` via download.
 - Todoist REST v2 direct met jouw persoonlijke API-token, opgeslagen als secret. Ik vraag het token pas op als fase 4 aan de beurt is.
-- AI-analyse via Lovable AI Gateway met server-side functies; per contact een compacte bundel nieuwe events in, gestructureerd voorstel eruit. Alle prompts en keys blijven server-side.
+- AI-analyse in server-side functies achter één provider-schakelaar: eigen Gemini API-key (standaard) of Lovable AI Gateway. Per contact een compacte bundel nieuwe events in, gestructureerd voorstel eruit. Alle prompts en keys blijven server-side.
 - Idempotentie: elk Gmail-bericht-ID en Drive-bestand+revisie wordt één keer verwerkt; elk voorstel is aan een bron gekoppeld zodat je altijd kunt zien waarom iets voorgesteld werd.
-- Gemini uit je Workspace-abonnement is niet als API bruikbaar in de app; de AI-analyse loopt daarom via Lovable AI (credits van je Lovable-workspace).
+- Tokenboekhouding per run in de database, zodat je in de app ziet wat de AI-laag deze maand gekost heeft en het plafond kan afdwingen.
 
 ## Nu starten
 
