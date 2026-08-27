@@ -75,11 +75,18 @@ export const STAGE_META: Record<Stage, { label: string; hint: string; tone: stri
     tone: "bg-success/25 text-success",
   },
   cold: {
-    label: "Koud / verloren",
-    hint: "Geen reactie of afgewezen",
+  cold: {
+    label: "Koud",
+    hint: "Geen reactie of nu geen interesse - later opnieuw proberen",
     tone: "bg-muted text-muted-foreground",
   },
+  lost: {
+    label: "Verloren",
+    hint: "Definitief niets meer te halen - geen opvolging",
+    tone: "bg-destructive/15 text-destructive",
+  },
 };
+
 
 export const OWNER_LABEL: Record<string, string> = {
   me: "Bij mij",
