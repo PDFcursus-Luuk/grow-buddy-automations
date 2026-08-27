@@ -1,0 +1,145 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { ArrowLeftRight } from "lucide-react";
+import { RequireAuth } from "@/components/RequireAuth";
+import { ContactFormDialog } from "@/components/ContactFormDialog";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { STAGES, STAGE_META, daysSince } from "@/lib/crm";
+import { useChangeStage, useContacts, type Contact } from "@/hooks/useCrmData";
+
+export const Route = createFileRoute("/pipeline")({
+  head: () => ({
+    meta: [
+      { title: "Pipeline — CRM Buddy voor pdfcursus.nl" },
+      {
+        name: "description",
+        content:
+          "Alle leads en klanten per fase: van nieuwe aanvraag en demo tot offerte, ingeplande training en herhaalklant.",
+      },
+      { property: "og:title", content: "Pipeline — CRM Buddy" },
+      {
+        property: "og:description",
+        content: "Bekijk je trainingspipeline per fase en verschuif contacten in één klik.",
+      },
+    ],
+  }),
+  component: () => (
+    <RequireAuth>
+      <PipelinePage />
+    </RequireAuth>
+  ),
+});
+
+function PipelinePage() {
+  const { data, isLoading } = useContacts();
+  const [query, setQuery] = useState("");
+
+  const filtered = (data ?? []).filter((c) =>
+    [c.full_name, c.email, c.job_title, c.source]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(query.toLowerCase()),
+  );
+
+  return (
+    <div className="space-y-8">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs tracking-widest text-muted-foreground uppercase">Overzicht</p>
+          <h1 className="mt-1 text-4xl">Pipeline</h1>
+        </div>
+        <div className="flex items-center gap-3">
+          <Input
+            placeholder="Zoek op naam, mail of bron"
+            className="w-56"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <ContactFormDialog />
+        </div>
+      </header>
+
+      {isLoading ? (
+        <Skeleton className="h-96 w-full" />
+      ) : (
+        <div className="flex gap-4 overflow-x-auto pb-4">
+          {STAGES.map((stage) => {
+            const items = filtered.filter((c) => c.stage === stage);
+            return (
+              <div key={stage} className="w-72 shrink-0">
+                <div className="mb-3">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-base font-semibold">{STAGE_META[stage].label}</h2>
+                    <Badge variant="outline">{items.length}</Badge>
+                  </div>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{STAGE_META[stage].hint}</p>
+                </div>
+                <div className="space-y-3">
+                  {items.map((c) => (
+                    <PipelineCard key={c.id} contact={c} />
+                  ))}
+                  {items.length === 0 && (
+                    <div className="rounded-lg border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
+                      Leeg
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PipelineCard({ contact }: { contact: Contact }) {
+  const changeStage = useChangeStage();
+  const days = daysSince(contact.last_contact_at ?? contact.created_at);
+
+  return (
+    <div className="rounded-lg border border-border bg-card p-4 shadow-soft">
+      <Link
+        to="/contacten/$contactId"
+        params={{ contactId: contact.id }}
+        className="block hover:underline"
+      >
+        <p className="text-sm font-semibold">{contact.full_name}</p>
+        <p className="truncate text-xs text-muted-foreground">{contact.job_title ?? contact.email ?? "—"}</p>
+      </Link>
+
+      {contact.next_step && <p className="mt-3 text-xs text-foreground">→ {contact.next_step}</p>}
+
+      <div className="mt-3 flex items-center justify-between">
+        <span className="text-xs text-muted-foreground">
+          {days !== null ? `${days}d stil` : "nieuw"}
+          {contact.group_size ? ` · ${contact.group_size} pers.` : ""}
+        </span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="size-7" aria-label="Fase wijzigen">
+              <ArrowLeftRight className="size-3.5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {STAGES.filter((s) => s !== contact.stage).map((s) => (
+              <DropdownMenuItem key={s} onClick={() => changeStage.mutate({ contact, to: s })}>
+                {STAGE_META[s].label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  );
+}
