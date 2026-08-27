@@ -115,6 +115,7 @@ Ik bouw de AI-laag daarom achter één schakelaar: **eigen Gemini-key** (standaa
 - AI-analyse in server-side functies achter één provider-schakelaar: eigen Gemini API-key (standaard) of Lovable AI Gateway. Per contact een compacte bundel nieuwe events in, gestructureerd voorstel eruit. Alle prompts en keys blijven server-side.
 - Idempotentie: elk Gmail-bericht-ID en Drive-bestand+revisie wordt één keer verwerkt; elk voorstel is aan een bron gekoppeld zodat je altijd kunt zien waarom iets voorgesteld werd.
 - Tokenboekhouding per run in de database, zodat je in de app ziet wat de AI-laag deze maand gekost heeft en het plafond kan afdwingen.
+- Credits: elke workspace krijgt gratis 20 Cloud- + 4 AI-credits/maand. Met een goedkoop model past het runtime-verbruik van deze app vermoedelijk binnen die toelages (enkele credits tot ~15/maand); het bouwen zelf kost extra, gebruiksgestuurde credits. Maandelijks plafond in de instellingen voorkomt ongemerkt hoog verbruik.
 
 ## Nu starten
 
