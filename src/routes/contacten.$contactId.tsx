@@ -152,7 +152,7 @@ function ContactPage() {
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <Row label="Volgende stap" value={c.next_step ?? "—"} />
-            <Row label="Bal ligt bij" value={OWNER_LABEL[c.next_step_owner]} />
+            <Row label="Bal ligt bij" value={OWNER_LABEL[c.next_step_owner] ?? "—"} />
             <Row label="Uiterlijk op" value={formatDate(c.next_step_due)} />
             <Row label="Laatste contact" value={formatDate(c.last_contact_at)} />
             <Row label="Groepsgrootte" value={c.group_size ? `${c.group_size} personen` : "—"} />

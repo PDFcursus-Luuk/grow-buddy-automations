@@ -11,7 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CampagnesRouteImport } from './routes/campagnes'
 import { Route as PipelineRouteImport } from './routes/pipeline'
+import { Route as ContactenContactIdRouteImport } from './routes/contacten.$contactId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -23,40 +25,65 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CampagnesRoute = CampagnesRouteImport.update({
+  id: '/campagnes',
+  path: '/campagnes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PipelineRoute = PipelineRouteImport.update({
   id: '/pipeline',
   path: '/pipeline',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactenContactIdRoute = ContactenContactIdRouteImport.update({
+  id: '/contacten/$contactId',
+  path: '/contacten/$contactId',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/campagnes': typeof CampagnesRoute
   '/pipeline': typeof PipelineRoute
+  '/contacten/$contactId': typeof ContactenContactIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/campagnes': typeof CampagnesRoute
   '/pipeline': typeof PipelineRoute
+  '/contacten/$contactId': typeof ContactenContactIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/campagnes': typeof CampagnesRoute
   '/pipeline': typeof PipelineRoute
+  '/contacten/$contactId': typeof ContactenContactIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/pipeline'
+  fullPaths:
+    '/' | '/auth' | '/campagnes' | '/pipeline' | '/contacten/$contactId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/pipeline'
-  id: '__root__' | '/' | '/auth' | '/pipeline'
+  to: '/' | '/auth' | '/campagnes' | '/pipeline' | '/contacten/$contactId'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/campagnes'
+    | '/pipeline'
+    | '/contacten/$contactId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  CampagnesRoute: typeof CampagnesRoute
   PipelineRoute: typeof PipelineRoute
+  ContactenContactIdRoute: typeof ContactenContactIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,11 +102,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/campagnes': {
+      id: '/campagnes'
+      path: '/campagnes'
+      fullPath: '/campagnes'
+      preLoaderRoute: typeof CampagnesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pipeline': {
       id: '/pipeline'
       path: '/pipeline'
       fullPath: '/pipeline'
       preLoaderRoute: typeof PipelineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contacten/$contactId': {
+      id: '/contacten/$contactId'
+      path: '/contacten/$contactId'
+      fullPath: '/contacten/$contactId'
+      preLoaderRoute: typeof ContactenContactIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -88,7 +129,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  CampagnesRoute: CampagnesRoute,
   PipelineRoute: PipelineRoute,
+  ContactenContactIdRoute: ContactenContactIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
