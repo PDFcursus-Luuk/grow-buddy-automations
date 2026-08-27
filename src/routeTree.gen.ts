@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CampagnesRouteImport } from './routes/campagnes'
 import { Route as InstellingenRouteImport } from './routes/instellingen'
+import { Route as OverzichtRouteImport } from './routes/overzicht'
 import { Route as PipelineRouteImport } from './routes/pipeline'
 import { Route as ContactenContactIdRouteImport } from './routes/contacten.$contactId'
 import { Route as ApiPublicAssistantRunRouteImport } from './routes/api/public/assistant-run'
@@ -37,6 +38,11 @@ const InstellingenRoute = InstellingenRouteImport.update({
   path: '/instellingen',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OverzichtRoute = OverzichtRouteImport.update({
+  id: '/overzicht',
+  path: '/overzicht',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PipelineRoute = PipelineRouteImport.update({
   id: '/pipeline',
   path: '/pipeline',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/campagnes': typeof CampagnesRoute
   '/instellingen': typeof InstellingenRoute
+  '/overzicht': typeof OverzichtRoute
   '/pipeline': typeof PipelineRoute
   '/contacten/$contactId': typeof ContactenContactIdRoute
   '/api/public/assistant-run': typeof ApiPublicAssistantRunRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/campagnes': typeof CampagnesRoute
   '/instellingen': typeof InstellingenRoute
+  '/overzicht': typeof OverzichtRoute
   '/pipeline': typeof PipelineRoute
   '/contacten/$contactId': typeof ContactenContactIdRoute
   '/api/public/assistant-run': typeof ApiPublicAssistantRunRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/campagnes': typeof CampagnesRoute
   '/instellingen': typeof InstellingenRoute
+  '/overzicht': typeof OverzichtRoute
   '/pipeline': typeof PipelineRoute
   '/contacten/$contactId': typeof ContactenContactIdRoute
   '/api/public/assistant-run': typeof ApiPublicAssistantRunRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/campagnes'
     | '/instellingen'
+    | '/overzicht'
     | '/pipeline'
     | '/contacten/$contactId'
     | '/api/public/assistant-run'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/campagnes'
     | '/instellingen'
+    | '/overzicht'
     | '/pipeline'
     | '/contacten/$contactId'
     | '/api/public/assistant-run'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/campagnes'
     | '/instellingen'
+    | '/overzicht'
     | '/pipeline'
     | '/contacten/$contactId'
     | '/api/public/assistant-run'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CampagnesRoute: typeof CampagnesRoute
   InstellingenRoute: typeof InstellingenRoute
+  OverzichtRoute: typeof OverzichtRoute
   PipelineRoute: typeof PipelineRoute
   ContactenContactIdRoute: typeof ContactenContactIdRoute
   ApiPublicAssistantRunRoute: typeof ApiPublicAssistantRunRoute
@@ -151,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InstellingenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/overzicht': {
+      id: '/overzicht'
+      path: '/overzicht'
+      fullPath: '/overzicht'
+      preLoaderRoute: typeof OverzichtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pipeline': {
       id: '/pipeline'
       path: '/pipeline'
@@ -180,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CampagnesRoute: CampagnesRoute,
   InstellingenRoute: InstellingenRoute,
+  OverzichtRoute: OverzichtRoute,
   PipelineRoute: PipelineRoute,
   ContactenContactIdRoute: ContactenContactIdRoute,
   ApiPublicAssistantRunRoute: ApiPublicAssistantRunRoute,

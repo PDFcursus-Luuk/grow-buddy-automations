@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { CalendarCheck, KanbanSquare, LogOut, Mails, Settings, Sparkles } from "lucide-react";
+import { CalendarCheck, KanbanSquare, ListChecks, LogOut, Mails, Settings, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { to: "/", label: "Vandaag", icon: CalendarCheck },
   { to: "/pipeline", label: "Pipeline", icon: KanbanSquare },
+  { to: "/overzicht", label: "Overzicht", icon: ListChecks },
   { to: "/campagnes", label: "Campagnes", icon: Mails },
   { to: "/instellingen", label: "Instellingen", icon: Settings },
 ] as const;
