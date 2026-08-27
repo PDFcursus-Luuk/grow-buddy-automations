@@ -402,3 +402,15 @@ export function usePushTasks() {
     onError: (e: Error) => toast.error(e.message),
   });
 }
+
+export function useNudgeDraft() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (contactId: string) => generateNudgeDraft({ data: { contactId } }),
+    onSuccess: (result) => {
+      qc.invalidateQueries({ queryKey: ["email_drafts"] });
+      toast.success("Concept klaargezet", { description: result.subject });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}

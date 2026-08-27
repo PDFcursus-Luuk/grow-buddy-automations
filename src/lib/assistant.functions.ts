@@ -23,3 +23,11 @@ export const pushTasksToTodoist = createServerFn({ method: "POST" })
     const { pushOpenTasks } = await import("./assistant-actions.server");
     return pushOpenTasks(context.userId);
   });
+
+export const generateNudgeDraft = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => z.object({ contactId: z.string().uuid() }).parse(data))
+  .handler(async ({ context, data }) => {
+    const { generateNudgeDraftForContact } = await import("./nudge-draft.server");
+    return generateNudgeDraftForContact(context.userId, data.contactId);
+  });
