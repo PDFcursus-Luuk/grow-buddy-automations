@@ -4,16 +4,19 @@ Een persoonlijk CRM dat zelfstandig (2x per dag, in de cloud — jouw PC hoeft n
 
 ## Voorgestelde pipeline
 
-Je vroeg om advies. Voorstel — zeven fases, geschikt voor dienstverlening met herhaalklanten:
+Je vroeg om advies. Toegespitst op trainingen (pdfcursus.nl): demo, offerte, datum plannen, uitvoeren, vervolg.
 
 ```text
-1. Nieuwe lead        binnengekomen, nog geen contact
-2. Contact gelegd     eerste mail/gesprek gestuurd, wacht op reactie
-3. Gesprek gehad      call/Meet geweest, behoefte bekend
-4. Voorstel uit       aanbod/quote verstuurd, in beslissing
-5. Klant              lopende opdracht
-6. Herhaalklant       opdracht afgerond, kandidaat voor vervolg
-7. Koud / verloren    geen reactie of afgewezen (met reden)
+1. Nieuwe lead         aanvraag binnen, nog geen contact
+2. Contact gelegd      gereageerd, wacht op hun antwoord
+3. Demo gepland        demo/intake staat in de agenda
+4. Demo gehad          behoefte en groepsgrootte bekend
+5. Offerte uit         voorstel verstuurd, in beslissing
+6. Datum plannen       akkoord, trainingsdatum wordt vastgezet
+7. Ingeplande training  datum staat, voorbereiding loopt
+8. Gegeven / klant     training uitgevoerd
+9. Herhaalklant        kandidaat voor vervolgtraining of extra groep
+10. Koud / verloren    geen reactie of afgewezen (met reden)
 ```
 
 Extra signalen naast de fase: eigenaar van de volgende stap (jij of zij), datum laatste contact, en een automatische "wordt stil"-vlag na X dagen zonder reactie. Dat laatste is precies waar je nu leads verliest — de dagelijkse run zet zulke contacten bovenaan.
@@ -42,6 +45,43 @@ Niets wordt zonder jouw akkoord verstuurd. Drafts worden nooit automatisch verzo
 - **Campagnes** — reeksen van 3-5 mails (bijv. "warm houden", "herhaalopdracht", "nieuwe lead opvolgen"). De AI personaliseert per contact; elke stap komt als draft in je actielijst.
 - **Instellingen** — Drive-map kiezen, run-tijden, stiltedrempel, tone-of-voice voor drafts, Todoist-project.
 
+## Kosten en tokengebruik
+
+Uitgangspunt: 150 contacten, +50 per jaar. De AI draait **nooit** over je hele bestand — alleen over contacten met nieuwe activiteit sinds de vorige run. Realistisch is dat 10-30 contacten per dag, samen ongeveer 600-900 analyses per maand.
+
+Per analyse gaat er ~2.000-4.000 tokens in (nieuwe mailtekst, ingekort, plus een compacte contactsamenvatting) en ~400-600 tokens uit. Dat is circa 2-3 miljoen input- en 0,4 miljoen output-tokens per maand.
+
+Ruwe maandkosten, afhankelijk van het model:
+
+```text
+Gemini Flash Lite / Flash   ca. €1 - €5 per maand
+GPT-mini-klasse             ca. €5 - €12 per maand
+Frontier-model (GPT-5.x)    ca. €25 - €60 per maand
+```
+
+Voorstel: standaard een goedkoop, snel model (Gemini Flash Lite-klasse) voor de dagelijkse triage, en alleen voor het schrijven van een concept-mail eventueel een sterker model. Dan blijf je in de praktijk rond €2-6 per maand.
+
+### Waarom niet je Claude- of Gemini-abonnement
+
+- **Claude-abonnement** en **Gemini in Google Workspace** zijn eindgebruikersabonnementen zonder API-toegang. Een server die zonder jouw PC draait kan er niet bij. Claude Code/Desktop zou betekenen dat je machine aan moet staan — precies wat je niet wil.
+- **Superhuman AI** heeft geen publieke API; het werkt alleen in hun eigen client.
+
+### Wel goedkoper: je eigen Gemini API-key
+
+Je kunt in Google AI Studio (los van je Workspace-abonnement) een eigen Gemini API-key aanmaken. Die zetten we als secret in de app, en de CRM gebruikt die in plaats van Lovable-credits. Gemini Flash Lite heeft een gratis dagquotum dat voor dit volume ruim genoeg is, en daarboven kost het centen. Dan zijn je runtime-AI-kosten praktisch nul en gaat wat er wel is naar Google, niet naar Lovable-credits.
+
+Ik bouw de AI-laag daarom achter één schakelaar: **eigen Gemini-key** (standaard, goedkoopst) of **Lovable AI** (geen setup). Wisselen kan later zonder de app te verbouwen.
+
+### Tokens besparen door slim ontwerp
+
+- Regels vóór AI: "geen reactie in 14 dagen", "mail bevat een afspraakbevestiging", "notitiebestand toegevoegd" worden zonder AI afgehandeld. Alleen echt onduidelijke gevallen gaan naar het model.
+- Alleen nieuwe tekst mee, niet de hele thread; quotes, signatures en disclaimers worden eruit gestript.
+- Per contact één samengevoegde analyse per run in plaats van één per mail.
+- Nieuwsbrieven, no-reply-adressen en automatische antwoorden worden weggefilterd voordat er een token wordt gebruikt.
+- Per contact een korte, doorlopende samenvatting die als context meegaat, in plaats van de volledige historie.
+- Concept-mails worden alleen gegenereerd als je een voorstel goedkeurt, niet preventief voor iedereen.
+- Een maandplafond in de instellingen: bij overschrijding stopt de AI-laag en blijven de regel-gebaseerde signalen gewoon werken.
+
 ## Aanpak in fases
 
 **Fase 1 — CRM-kern**: database (contacten, bedrijven, pipeline-fases, tijdlijn-events, voorstellen, drafts, taken), inlog, kanban + contactdetail + dagoverzicht. Handmatig al bruikbaar.
@@ -60,9 +100,9 @@ Niets wordt zonder jouw akkoord verstuurd. Drafts worden nooit automatisch verzo
 - Gmail-connector (gateway) voor `users.messages.list/get`, `users.drafts.create` (incl. `threadId` zodat de draft in de juiste thread staat) en labels. Superhuman leest Gmail, dus drafts verschijnen daar automatisch — geen Superhuman-API nodig.
 - Google Drive-connector voor `files.list` op een gekozen map met `modifiedTime`-filter; Google Docs via export naar tekst, `.txt` via download.
 - Todoist REST v2 direct met jouw persoonlijke API-token, opgeslagen als secret. Ik vraag het token pas op als fase 4 aan de beurt is.
-- AI-analyse via Lovable AI Gateway met server-side functies; per contact een compacte bundel nieuwe events in, gestructureerd voorstel eruit. Alle prompts en keys blijven server-side.
+- AI-analyse in server-side functies achter één provider-schakelaar: eigen Gemini API-key (standaard) of Lovable AI Gateway. Per contact een compacte bundel nieuwe events in, gestructureerd voorstel eruit. Alle prompts en keys blijven server-side.
 - Idempotentie: elk Gmail-bericht-ID en Drive-bestand+revisie wordt één keer verwerkt; elk voorstel is aan een bron gekoppeld zodat je altijd kunt zien waarom iets voorgesteld werd.
-- Gemini uit je Workspace-abonnement is niet als API bruikbaar in de app; de AI-analyse loopt daarom via Lovable AI (credits van je Lovable-workspace).
+- Tokenboekhouding per run in de database, zodat je in de app ziet wat de AI-laag deze maand gekost heeft en het plafond kan afdwingen.
 
 ## Nu starten
 
