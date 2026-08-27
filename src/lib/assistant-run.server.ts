@@ -7,11 +7,13 @@ import {
   getMessage,
   getMyAddress,
   header,
+  isDraftMessage,
   isNoiseSender,
   listMessageIdsSince,
   messageText,
   parseAddress,
 } from "./gmail.server";
+
 import { STAGES } from "./crm";
 
 export type RunResult = {
