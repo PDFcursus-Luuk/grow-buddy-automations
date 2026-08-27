@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Stage } from "@/lib/crm";
+import { pushDraftsToGmail, pushTasksToTodoist, runAssistant } from "@/lib/assistant.functions";
 
 export type Contact = {
   id: string;
@@ -306,6 +307,78 @@ export function useCompleteTask() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export type EmailDraft = {
+  id: string;
+  subject: string;
+  body: string;
+  status: "pending" | "created" | "failed" | "discarded";
+  error: string | null;
+  gmail_draft_id: string | null;
+  created_at: string;
+  contact_id: string | null;
+  contacts?: { id: string; full_name: string; email: string | null } | null;
+};
+
+export function useDrafts() {
+  return useQuery({
+    queryKey: ["email_drafts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("email_drafts")
+        .select("*, contacts(id, full_name, email)")
+        .in("status", ["pending", "created", "failed"])
+        .order("created_at", { ascending: false })
+        .limit(30);
+      if (error) throw error;
+      return data as unknown as EmailDraft[];
+    },
+  });
+}
+
+export function useRunAssistant() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => runAssistant(),
+    onSuccess: (result) => {
+      ["contacts", "suggestions", "tasks", "email_drafts", "run_logs"].forEach((key) =>
+        qc.invalidateQueries({ queryKey: [key] }),
+      );
+      toast.success(
+        `Run klaar: ${result.emails} mails, ${result.notes} notities, ${result.suggestions} voorstellen`,
+        result.skippedReason ? { description: result.skippedReason } : undefined,
+      );
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function usePushDrafts() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => pushDraftsToGmail(),
+    onSuccess: (result) => {
+      qc.invalidateQueries({ queryKey: ["email_drafts"] });
+      if (result.created > 0) toast.success(`${result.created} concept(en) staan in je mailbox`);
+      else if (result.failed > 0) toast.error("Concepten konden niet worden aangemaakt");
+      else toast.info("Geen concepten om klaar te zetten");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function usePushTasks() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => pushTasksToTodoist(),
+    onSuccess: (result) => {
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      if (!result.enabled) toast.info("Todoist is nog niet gekoppeld");
+      else toast.success(`${result.created} taak/taken naar Todoist`);
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 }

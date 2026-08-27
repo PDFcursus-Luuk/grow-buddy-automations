@@ -297,6 +297,27 @@ export type Database = {
         }
         Relationships: []
       }
+      cron_secrets: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          token?: string
+        }
+        Relationships: []
+      }
       email_drafts: {
         Row: {
           body: string
