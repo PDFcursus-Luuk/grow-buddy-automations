@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
-import { Check, X } from "lucide-react";
+import { Check, Sparkles, X } from "lucide-react";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useCompleteTask,
   useContacts,
+  useNudgeDraft,
   usePendingSuggestions,
   useResolveSuggestion,
   useSettings,
@@ -147,8 +148,9 @@ function OverviewPage() {
         </TabsContent>
 
         <TabsContent value="stil" className="mt-6">
-          <ContactTable contacts={stale} empty="Niets staat te lang stil. Netjes." />
+          <ContactTable contacts={stale} empty="Niets staat te lang stil. Netjes." withDraft />
         </TabsContent>
+
 
         <TabsContent value="taken" className="mt-6 space-y-2">
           {(tasks.data ?? []).length === 0 ? (
@@ -188,7 +190,16 @@ function OverviewPage() {
   );
 }
 
-function ContactTable({ contacts, empty }: { contacts: Contact[]; empty: string }) {
+function ContactTable({
+  contacts,
+  empty,
+  withDraft = false,
+}: {
+  contacts: Contact[];
+  empty: string;
+  withDraft?: boolean;
+}) {
+  const nudge = useNudgeDraft();
   if (contacts.length === 0) return <Empty text={empty} />;
   return (
     <div className="overflow-hidden rounded-lg border border-border">
@@ -199,6 +210,7 @@ function ContactTable({ contacts, empty }: { contacts: Contact[]; empty: string 
             <th className="px-4 py-2 font-medium">Fase</th>
             <th className="px-4 py-2 font-medium">Volgende stap</th>
             <th className="px-4 py-2 font-medium">Stil</th>
+            {withDraft ? <th className="px-4 py-2 font-medium">Concept</th> : null}
           </tr>
         </thead>
         <tbody>
@@ -221,6 +233,19 @@ function ContactTable({ contacts, empty }: { contacts: Contact[]; empty: string 
                 </td>
                 <td className="px-4 py-2 text-muted-foreground">{c.next_step ?? "—"}</td>
                 <td className="px-4 py-2 text-muted-foreground">{days !== null ? `${days}d` : "nieuw"}</td>
+                {withDraft ? (
+                  <td className="px-4 py-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={!c.email || nudge.isPending}
+                      onClick={() => nudge.mutate(c.id)}
+                      title={c.email ? "AI-concept opstellen" : "Geen e-mailadres bekend"}
+                    >
+                      <Sparkles className="mr-1.5 size-3.5" /> Concept
+                    </Button>
+                  </td>
+                ) : null}
               </tr>
             );
           })}
@@ -229,6 +254,7 @@ function ContactTable({ contacts, empty }: { contacts: Contact[]; empty: string 
     </div>
   );
 }
+
 
 function Empty({ text }: { text: string }) {
   return (

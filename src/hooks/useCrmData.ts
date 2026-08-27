@@ -2,7 +2,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Stage, Track } from "@/lib/crm";
-import { pushDraftsToGmail, pushTasksToTodoist, runAssistant } from "@/lib/assistant.functions";
+import {
+  generateNudgeDraft,
+  pushDraftsToGmail,
+  pushTasksToTodoist,
+  runAssistant,
+} from "@/lib/assistant.functions";
+
 
 export type Contact = {
   id: string;
@@ -398,6 +404,18 @@ export function usePushTasks() {
       qc.invalidateQueries({ queryKey: ["tasks"] });
       if (!result.enabled) toast.info("Todoist is nog niet gekoppeld");
       else toast.success(`${result.created} taak/taken naar Todoist`);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function useNudgeDraft() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (contactId: string) => generateNudgeDraft({ data: { contactId } }),
+    onSuccess: (result) => {
+      qc.invalidateQueries({ queryKey: ["email_drafts"] });
+      toast.success("Concept klaargezet", { description: result.subject });
     },
     onError: (e: Error) => toast.error(e.message),
   });

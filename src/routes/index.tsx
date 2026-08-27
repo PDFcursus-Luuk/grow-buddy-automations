@@ -21,6 +21,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useCompleteTask,
+  useNudgeDraft,
+
   useContacts,
   useDrafts,
   usePendingSuggestions,
@@ -334,19 +336,30 @@ function Stat({
 
 function StaleRow({ contact }: { contact: Contact }) {
   const days = daysSince(contact.last_contact_at ?? contact.created_at);
+  const nudge = useNudgeDraft();
   return (
-    <Link
-      to="/contacten/$contactId"
-      params={{ contactId: contact.id }}
-      className="flex items-center gap-3 p-4 transition-colors hover:bg-secondary/50"
-    >
-      <div className="min-w-0 flex-1">
+    <div className="flex items-center gap-3 p-4 transition-colors hover:bg-secondary/50">
+      <Link
+        to="/contacten/$contactId"
+        params={{ contactId: contact.id }}
+        className="min-w-0 flex-1"
+      >
         <p className="truncate text-sm font-medium">{contact.full_name}</p>
         <p className="truncate text-xs text-muted-foreground">
           {contact.email ?? "geen e-mail"} · {STAGE_META[contact.stage].label}
         </p>
-      </div>
+      </Link>
       <Badge variant="outline">{days} dagen</Badge>
-    </Link>
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={!contact.email || nudge.isPending}
+        onClick={() => nudge.mutate(contact.id)}
+        title={contact.email ? "AI-concept opstellen" : "Geen e-mailadres bekend"}
+      >
+        <Sparkles className="mr-1.5 size-3.5" /> Concept
+      </Button>
+    </div>
   );
 }
+
