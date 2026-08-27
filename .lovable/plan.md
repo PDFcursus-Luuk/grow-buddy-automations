@@ -1,122 +1,60 @@
-# AI CRM met mail-, Drive- en Todoist-assistent
+# Twee pijplijnen, klantenimport en klikbare overzichten
 
-Een persoonlijk CRM dat zelfstandig (2x per dag, in de cloud — jouw PC hoeft niet aan) je mail en Drive-notities leest, per klant/lead bijhoudt waar je staat, voorgestelde pipeline-verschuivingen klaarzet, Gmail-drafts aanmaakt (verschijnen direct in Superhuman) en follow-up taken in Todoist zet.
+## 1. Twee pijplijnen: Cursus en Calculatie
 
-## Voorgestelde pipeline
+Elk contact krijgt een **spoor**: `Cursus` (PDFcursus-traject, de huidige 10 fases), `Calculatie` (calculatiewerk) of `Geen pijplijn` (partner, leverancier, intern).
 
-Je vroeg om advies. Toegespitst op trainingen (pdfcursus.nl): demo, offerte, datum plannen, uitvoeren, vervolg.
-
-```text
-1. Nieuwe lead         aanvraag binnen, nog geen contact
-2. Contact gelegd      gereageerd, wacht op hun antwoord
-3. Demo gepland        demo/intake staat in de agenda
-4. Demo gehad          behoefte en groepsgrootte bekend
-5. Offerte uit         voorstel verstuurd, in beslissing
-6. Datum plannen       akkoord, trainingsdatum wordt vastgezet
-7. Ingeplande training  datum staat, voorbereiding loopt
-8. Gegeven / klant     training uitgevoerd
-9. Herhaalklant        kandidaat voor vervolgtraining of extra groep
-10. Koud / verloren    geen reactie of afgewezen (met reden)
-```
-
-Extra signalen naast de fase: eigenaar van de volgende stap (jij of zij), datum laatste contact, en een automatische "wordt stil"-vlag na X dagen zonder reactie. Dat laatste is precies waar je nu leads verliest — de dagelijkse run zet zulke contacten bovenaan.
-
-## Wat de dagelijkse run doet
-
-Twee keer per dag (bijv. 07:30 en 16:30):
-
-1. Nieuwe Gmail-berichten ophalen van bekende contacten + nieuwe afzenders.
-2. Nieuwe/gewijzigde bestanden uit een aangewezen Google Drive-map lezen: Meet-notities (Google Docs) en `.txt` notities.
-3. Per contact laat de AI de nieuwe correspondentie langs de pipeline lopen en produceert:
-   - een korte samenvatting van wat er gebeurd is
-   - een **voorgestelde** fase-verschuiving met reden en bron (jij keurt goed)
-   - een voorgestelde vervolgactie + datum
-   - waar zinvol een concept-mail
-4. Alles komt in een dagelijkse **Actielijst**. Per item: Goedkeuren, Aanpassen of Afwijzen.
-5. Bij goedkeuren: fase wordt bijgewerkt, Gmail-draft aangemaakt (zichtbaar in Superhuman), en/of Todoist-taak aangemaakt met deadline.
-
-Niets wordt zonder jouw akkoord verstuurd. Drafts worden nooit automatisch verzonden.
-
-## Schermen
-
-- **Dagoverzicht** — de actielijst van vandaag, plus "stille" leads en achterstallige follow-ups.
-- **Pipeline (kanban)** — kolommen per fase, kaarten slepen kan ook handmatig.
-- **Contactdetail** — tijdlijn van mails, notities, fase-wijzigingen (met reden en bron), drafts en taken.
-- **Campagnes** — reeksen van 3-5 mails (bijv. "warm houden", "herhaalopdracht", "nieuwe lead opvolgen"). De AI personaliseert per contact; elke stap komt als draft in je actielijst.
-- **Instellingen** — Drive-map kiezen, run-tijden, stiltedrempel, tone-of-voice voor drafts, Todoist-project.
-
-## Kosten en tokengebruik
-
-Uitgangspunt: 150 contacten, +50 per jaar. De AI draait **nooit** over je hele bestand — alleen over contacten met nieuwe activiteit sinds de vorige run. Realistisch is dat 10-30 contacten per dag, samen ongeveer 600-900 analyses per maand.
-
-Per analyse gaat er ~2.000-4.000 tokens in (nieuwe mailtekst, ingekort, plus een compacte contactsamenvatting) en ~400-600 tokens uit. Dat is circa 2-3 miljoen input- en 0,4 miljoen output-tokens per maand.
-
-Ruwe maandkosten, afhankelijk van het model:
+Eenvoudige calculatie-pijplijn (6 fases):
 
 ```text
-Gemini Flash Lite / Flash   ca. €1 - €5 per maand
-GPT-mini-klasse             ca. €5 - €12 per maand
-Frontier-model (GPT-5.x)    ca. €25 - €60 per maand
+Aanvraag  ->  Offerte uit  ->  Werk loopt  ->  Opgeleverd  ->  Terugkerend
+                                                  \-> Koud / verloren
 ```
 
-In Lovable-credits (als je niet je eigen Gemini-key gebruikt), zelfde volume per maand:
+- Pipeline-pagina krijgt bovenaan een schakelaar **Cursus | Calculatie | Geen pijplijn**; per spoor zie je alleen de bijbehorende fases.
+- In het contactformulier kies je eerst het spoor, daarna de fase (de lijst met fases past zich aan).
+- Contacten zonder spoor blijven waar ze zijn: alle bestaande contacten worden op `Cursus` gezet, behalve wat hieronder als intern wordt gemarkeerd.
+- De assistent stelt alleen fase-verschuivingen voor binnen het spoor van dat contact, en mag zelf voorstellen om een nieuw contact op Calculatie te zetten als de mail duidelijk over calculatiewerk gaat (jij keurt goed).
 
-```text
-Gemini Flash Lite / Flash   enkele credits, grotendeels gedekt door
-                            de gratis AI-toelage van 4 credits/maand
-Mini-klasse model           ca. 10 - 25 credits per maand
-Frontier-model (GPT-5.x)    ca. 50 - 150 credits per maand
-```
+## 2. Eigen en administratieve adressen negeren
 
-Dit is alleen de runtime-AI, los van de credits voor het bouwen. De app krijgt een tokenteller en een maandplafond zodat dit nooit ongemerkt oploopt.
-```
+- LMcalculatie (jouw eigen bedrijf) en `ausgaben@accountable...` zijn geen leads. Deze worden gemarkeerd als **intern** en verdwijnen uit pipeline, Vandaag en de assistent-analyse.
+- In Instellingen komt een veldje **"Negeer deze adressen/domeinen"** (regel per regel), voorgevuld met je eigen domeinen en het accountable-adres, zodat je later zelf vervuiling kunt toevoegen. De mailscan slaat die afzenders/ontvangers over en maakt er geen contact meer van.
+- De 4 bestaande contacten met een LMcalculatie/accountable-adres worden opgeruimd (op intern gezet, uit de pipeline).
 
-Voorstel: standaard een goedkoop, snel model (Gemini Flash Lite-klasse) voor de dagelijkse triage, en alleen voor het schrijven van een concept-mail eventueel een sterker model. Dan blijf je in de praktijk rond €2-6 per maand.
+## 3. Excel-lijst importeren
 
-### Waarom niet je Claude- of Gemini-abonnement
+De aangeleverde lijst (136 rijen) wordt in de CRM gezet, met bedrijf, plaats, e-mail, telefoon, klantnummer, btw-nummer, laatste contact en de notitie/volgende actie. Mapping van jouw kolommen:
 
-- **Claude-abonnement** en **Gemini in Google Workspace** zijn eindgebruikersabonnementen zonder API-toegang. Een server die zonder jouw PC draait kan er niet bij. Claude Code/Desktop zou betekenen dat je machine aan moet staan — precies wat je niet wil.
-- **Superhuman AI** heeft geen publieke API; het werkt alleen in hun eigen client.
+| Excel-stage | Spoor | Fase in CRM |
+| --- | --- | --- |
+| Klant | Cursus | Klant |
+| Dormant | Cursus | Herhaalklant-kandidaat (klant, stil) |
+| Bijna klant / Onderhandeling | Cursus | Offerte uit |
+| Warm / Lauw | Cursus | Contact gelegd |
+| Koud / Afgekoeld | Cursus | Koud / verloren |
+| Calculatie-klant | Calculatie | Opgeleverd |
+| Partner / Leverancier | Geen pijplijn | — |
 
-### Wel goedkoper: je eigen Gemini API-key
+Bestaande contacten worden op e-mail gematcht en aangevuld in plaats van gedubbeld. Rijen zonder e-mail komen er wel in (op bedrijfsnaam), zodat je niets kwijt bent.
 
-Je kunt in Google AI Studio (los van je Workspace-abonnement) een eigen Gemini API-key aanmaken. Die zetten we als secret in de app, en de CRM gebruikt die in plaats van Lovable-credits. Gemini Flash Lite heeft een gratis dagquotum dat voor dit volume ruim genoeg is, en daarboven kost het centen. Dan zijn je runtime-AI-kosten praktisch nul en gaat wat er wel is naar Google, niet naar Lovable-credits.
+Voor volgende lijsten komt er in Instellingen een **importvenster**: je plakt de rijen (of upload een CSV), kiest het spoor, en ziet een voorbeeld voor je bevestigt.
 
-Ik bouw de AI-laag daarom achter één schakelaar: **eigen Gemini-key** (standaard, goedkoopst) of **Lovable AI** (geen setup). Wisselen kan later zonder de app te verbouwen.
+## 4. Vandaag-tellers klikbaar
 
-### Tokens besparen door slim ontwerp
+De vier kaarten worden knoppen naar een nieuwe pagina **Overzicht** met tabbladen:
 
-- Regels vóór AI: "geen reactie in 14 dagen", "mail bevat een afspraakbevestiging", "notitiebestand toegevoegd" worden zonder AI afgehandeld. Alleen echt onduidelijke gevallen gaan naar het model.
-- Alleen nieuwe tekst mee, niet de hele thread; quotes, signatures en disclaimers worden eruit gestript.
-- Per contact één samengevoegde analyse per run in plaats van één per mail.
-- Nieuwsbrieven, no-reply-adressen en automatische antwoorden worden weggefilterd voordat er een token wordt gebruikt.
-- Per contact een korte, doorlopende samenvatting die als context meegaat, in plaats van de volledige historie.
-- Concept-mails worden alleen gegenereerd als je een voorstel goedkeurt, niet preventief voor iedereen.
-- Een maandplafond in de instellingen: bij overschrijding stopt de AI-laag en blijven de regel-gebaseerde signalen gewoon werken.
+- **Open voorstellen** — alle wachtende voorstellen, met goedkeuren/afwijzen
+- **Actieve leads & klanten** — filterbaar op spoor en fase
+- **Te lang stil** — volledige lijst, niet alleen de eerste 8
+- **Open taken** — volledige takenlijst
 
-## Aanpak in fases
+Elke rij linkt door naar het contactdossier.
 
-**Fase 1 — CRM-kern**: database (contacten, bedrijven, pipeline-fases, tijdlijn-events, voorstellen, drafts, taken), inlog, kanban + contactdetail + dagoverzicht. Handmatig al bruikbaar.
+## Technische details
 
-**Fase 2 — Gmail + Drive**: connectors koppelen, synchronisatie van mails en Drive-notities naar de tijdlijn, ontdubbeling per bericht/bestand.
-
-**Fase 3 — AI-analyse**: per contact de nieuwe correspondentie beoordelen; voorstellen genereren met reden, bron en zekerheid. Goedkeur-flow in de UI.
-
-**Fase 4 — Drafts, Todoist, campagnes**: Gmail-drafts aanmaken op goedkeuring, Todoist-taken, campagnereeksen met stap-tracking.
-
-**Fase 5 — Automatisch draaien**: geplande run 2x per dag in de cloud, met runlog en foutmeldingen zichtbaar in de app.
-
-## Technisch
-
-- Lovable Cloud voor database, inlog en geplande taken (pg_cron die een `/api/public/*` route met bearer-auth aanroept). Draait server-side, onafhankelijk van je PC.
-- Gmail-connector (gateway) voor `users.messages.list/get`, `users.drafts.create` (incl. `threadId` zodat de draft in de juiste thread staat) en labels. Superhuman leest Gmail, dus drafts verschijnen daar automatisch — geen Superhuman-API nodig.
-- Google Drive-connector voor `files.list` op een gekozen map met `modifiedTime`-filter; Google Docs via export naar tekst, `.txt` via download.
-- Todoist REST v2 direct met jouw persoonlijke API-token, opgeslagen als secret. Ik vraag het token pas op als fase 4 aan de beurt is.
-- AI-analyse in server-side functies achter één provider-schakelaar: eigen Gemini API-key (standaard) of Lovable AI Gateway. Per contact een compacte bundel nieuwe events in, gestructureerd voorstel eruit. Alle prompts en keys blijven server-side.
-- Idempotentie: elk Gmail-bericht-ID en Drive-bestand+revisie wordt één keer verwerkt; elk voorstel is aan een bron gekoppeld zodat je altijd kunt zien waarom iets voorgesteld werd.
-- Tokenboekhouding per run in de database, zodat je in de app ziet wat de AI-laag deze maand gekost heeft en het plafond kan afdwingen.
-- Credits: elke workspace krijgt gratis 20 Cloud- + 4 AI-credits/maand. Met een goedkoop model past het runtime-verbruik van deze app vermoedelijk binnen die toelages (enkele credits tot ~15/maand); het bouwen zelf kost extra, gebruiksgestuurde credits. Maandelijks plafond in de instellingen voorkomt ongemerkt hoog verbruik.
-
-## Nu starten
-
-Ik begin met fase 1 en 2 zodat je snel een werkend overzicht hebt, daarna de AI-laag. De Gmail- en Drive-koppeling vraag ik in fase 2 via een connect-kaart in de chat; het Todoist-token in fase 4.
+- Migratie: nieuwe enums `contact_track` (`cursus`, `calculatie`, `none`) en `calc_stage`; kolommen `contacts.track`, `contacts.calc_stage`, `contacts.is_internal`; `crm_settings.ignore_patterns text[]` met defaults. GRANTs + bestaande RLS-policy dekt de nieuwe kolommen.
+- Data: import van de Excel-rijen als literal INSERT/UPDATE-statements in dezelfde migratie; opruimactie voor de 4 interne contacten.
+- `src/lib/crm.ts`: `CALC_STAGES` + `CALC_STAGE_META`, helper `stagesForTrack(track)`.
+- `src/lib/gmail.server.ts` / `assistant-run.server.ts`: negeerlijst uit settings toepassen bij contactherkenning; prompt krijgt het spoor mee en beperkt fase-voorstellen tot dat spoor.
+- Nieuwe route `src/routes/overzicht.tsx` (tabs via query param), `pipeline.tsx` krijgt spoor-schakelaar, `ContactFormDialog` krijgt spoorkeuze, `index.tsx` stat-kaarten worden links.
