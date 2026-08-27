@@ -7,11 +7,13 @@ import {
   getMessage,
   getMyAddress,
   header,
+  isDraftMessage,
   isNoiseSender,
   listMessageIdsSince,
   messageText,
   parseAddress,
 } from "./gmail.server";
+
 import { STAGES } from "./crm";
 
 export type RunResult = {
@@ -151,6 +153,8 @@ async function syncGmail(userId: string, contacts: ContactRow[]): Promise<number
     const message = await getMessage(id);
     const internal = Math.floor(Number(message.internalDate ?? "0") / 1000);
     if (internal > newest) newest = internal;
+    if (isDraftMessage(message)) continue;
+
 
     const fromRaw = header(message, "From");
     const toRaw = header(message, "To");

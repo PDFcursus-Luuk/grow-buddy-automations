@@ -102,13 +102,19 @@ export async function getMyAddress(): Promise<string> {
 
 export async function listMessageIdsSince(afterEpochSeconds: number): Promise<string[]> {
   const query = encodeURIComponent(
-    `after:${afterEpochSeconds} -in:chats -in:spam -category:promotions -category:social -category:forums`,
+    `after:${afterEpochSeconds} -in:chats -in:spam -in:drafts -in:trash -category:promotions -category:social -category:forums`,
   );
   const data = await gmailJson<{ messages?: { id: string }[] }>(
     `/users/me/messages?maxResults=80&q=${query}`,
   );
   return (data.messages ?? []).map((m) => m.id);
 }
+
+/** Een concept is nog niet verstuurd; die mag nooit als verzonden mail meetellen. */
+export function isDraftMessage(message: GmailMessage): boolean {
+  return (message.labelIds ?? []).includes("DRAFT");
+}
+
 
 export async function getMessage(id: string): Promise<GmailMessage> {
   return gmailJson<GmailMessage>(`/users/me/messages/${id}?format=full`);
