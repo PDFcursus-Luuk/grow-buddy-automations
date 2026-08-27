@@ -420,3 +420,33 @@ export function useNudgeDraft() {
     onError: (e: Error) => toast.error(e.message),
   });
 }
+
+export function useUpdateDraft() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, subject, body }: { id: string; subject: string; body: string }) => {
+      const { error } = await supabase.from("email_drafts").update({ subject, body }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["email_drafts"] });
+      toast.success("Concept bijgewerkt");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function useDeleteDraft() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("email_drafts").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["email_drafts"] });
+      toast.success("Concept verwijderd");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
