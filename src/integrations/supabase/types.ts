@@ -178,6 +178,7 @@ export type Database = {
           group_size: number | null
           id: string
           is_archived: boolean
+          is_internal: boolean
           job_title: string | null
           last_contact_at: string | null
           last_inbound_at: string | null
@@ -188,6 +189,7 @@ export type Database = {
           phone: string | null
           source: string | null
           stage: Database["public"]["Enums"]["crm_stage"]
+          track: Database["public"]["Enums"]["contact_track"]
           updated_at: string
           user_id: string
         }
@@ -202,6 +204,7 @@ export type Database = {
           group_size?: number | null
           id?: string
           is_archived?: boolean
+          is_internal?: boolean
           job_title?: string | null
           last_contact_at?: string | null
           last_inbound_at?: string | null
@@ -212,6 +215,7 @@ export type Database = {
           phone?: string | null
           source?: string | null
           stage?: Database["public"]["Enums"]["crm_stage"]
+          track?: Database["public"]["Enums"]["contact_track"]
           updated_at?: string
           user_id: string
         }
@@ -226,6 +230,7 @@ export type Database = {
           group_size?: number | null
           id?: string
           is_archived?: boolean
+          is_internal?: boolean
           job_title?: string | null
           last_contact_at?: string | null
           last_inbound_at?: string | null
@@ -236,6 +241,7 @@ export type Database = {
           phone?: string | null
           source?: string | null
           stage?: Database["public"]["Enums"]["crm_stage"]
+          track?: Database["public"]["Enums"]["contact_track"]
           updated_at?: string
           user_id?: string
         }
@@ -257,6 +263,7 @@ export type Database = {
           created_at: string
           drive_folder_id: string | null
           drive_folder_name: string | null
+          ignore_patterns: string[]
           monthly_token_cap: number
           signature: string | null
           silence_days: number
@@ -272,6 +279,7 @@ export type Database = {
           created_at?: string
           drive_folder_id?: string | null
           drive_folder_name?: string | null
+          ignore_patterns?: string[]
           monthly_token_cap?: number
           signature?: string | null
           silence_days?: number
@@ -287,6 +295,7 @@ export type Database = {
           created_at?: string
           drive_folder_id?: string | null
           drive_folder_name?: string | null
+          ignore_patterns?: string[]
           monthly_token_cap?: number
           signature?: string | null
           silence_days?: number
@@ -647,6 +656,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      contact_track: "cursus" | "calculatie" | "overig"
       crm_stage:
         | "new_lead"
         | "contacted"
@@ -799,6 +809,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      contact_track: ["cursus", "calculatie", "overig"],
       crm_stage: [
         "new_lead",
         "contacted",

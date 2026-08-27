@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import type { Stage } from "@/lib/crm";
+import type { Stage, Track } from "@/lib/crm";
 import { pushDraftsToGmail, pushTasksToTodoist, runAssistant } from "@/lib/assistant.functions";
 
 export type Contact = {
@@ -11,6 +11,8 @@ export type Contact = {
   phone: string | null;
   job_title: string | null;
   stage: Stage;
+  track: Track;
+  is_internal: boolean;
   next_step: string | null;
   next_step_owner: "me" | "them" | "none";
   next_step_due: string | null;
@@ -66,18 +68,36 @@ export type CrmTask = {
   contacts?: { id: string; full_name: string } | null;
 };
 
-export function useContacts() {
+export function useContacts(track: Track | "alle" = "cursus") {
   return useQuery({
-    queryKey: ["contacts"],
+    queryKey: ["contacts", track],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("contacts")
         .select("*, companies(id, name)")
         .eq("is_archived", false)
-        .order("updated_at", { ascending: false });
+        .eq("is_internal", false);
+      if (track !== "alle") query = query.eq("track", track);
+      const { data, error } = await query.order("updated_at", { ascending: false });
       if (error) throw error;
       return data as unknown as Contact[];
     },
+  });
+}
+
+export function useSetTrack() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ contactId, track }: { contactId: string; track: Track }) => {
+      const { error } = await supabase.from("contacts").update({ track }).eq("id", contactId);
+      if (error) throw error;
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["contacts"] });
+      qc.invalidateQueries({ queryKey: ["contact", vars.contactId] });
+      toast.success(`Verplaatst naar spoor ${vars.track}`);
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 }
 

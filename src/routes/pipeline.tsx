@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { STAGES, STAGE_META, daysSince } from "@/lib/crm";
+import { STAGES, STAGE_META, TRACKS, TRACK_META, daysSince, type Track } from "@/lib/crm";
 import { useChangeStage, useContacts, type Contact } from "@/hooks/useCrmData";
 
 export const Route = createFileRoute("/pipeline")({
@@ -40,7 +40,8 @@ export const Route = createFileRoute("/pipeline")({
 });
 
 function PipelinePage() {
-  const { data, isLoading } = useContacts();
+  const [track, setTrack] = useState<Track | "alle">("cursus");
+  const { data, isLoading } = useContacts(track);
   const [query, setQuery] = useState("");
 
   const filtered = (data ?? []).filter((c) =>
@@ -58,7 +59,20 @@ function PipelinePage() {
           <p className="text-xs tracking-widest text-muted-foreground uppercase">Overzicht</p>
           <h1 className="mt-1 text-4xl">Pipeline</h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex rounded-md border border-border p-0.5">
+            {([...TRACKS, "alle"] as const).map((t) => (
+              <Button
+                key={t}
+                type="button"
+                size="sm"
+                variant={track === t ? "secondary" : "ghost"}
+                onClick={() => setTrack(t)}
+              >
+                {t === "alle" ? "Alles" : TRACK_META[t].label}
+              </Button>
+            ))}
+          </div>
           <Input
             placeholder="Zoek op naam, mail of bron"
             className="w-56"

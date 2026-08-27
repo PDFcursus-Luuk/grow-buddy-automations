@@ -111,10 +111,10 @@ function TodayPage() {
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat icon={Inbox} label="Open voorstellen" value={suggestions.data?.length ?? 0} />
-        <Stat icon={Users} label="Actieve leads & klanten" value={active.length} />
-        <Stat icon={AlarmClock} label={`Stil ≥ ${silenceDays} dagen`} value={stale.length} />
-        <Stat icon={Check} label="Open taken" value={tasks.data?.length ?? 0} />
+        <Stat icon={Inbox} label="Open voorstellen" value={suggestions.data?.length ?? 0} tab="voorstellen" />
+        <Stat icon={Users} label="Actieve leads & klanten" value={active.length} tab="leads" />
+        <Stat icon={AlarmClock} label={`Stil ≥ ${silenceDays} dagen`} value={stale.length} tab="stil" />
+        <Stat icon={Check} label="Open taken" value={tasks.data?.length ?? 0} tab="taken" />
       </div>
 
       <section className="space-y-4">
@@ -308,13 +308,16 @@ function Stat({
   icon: Icon,
   label,
   value,
+  tab,
 }: {
   icon: typeof Users;
   label: string;
   value: number;
+  tab: "voorstellen" | "leads" | "stil" | "taken";
 }) {
   return (
-    <Card className="shadow-soft">
+    <Card className="shadow-soft transition-colors hover:border-primary/40">
+      <Link to="/overzicht" search={{ tab }} className="block">
       <CardContent className="flex items-center gap-4 py-5">
         <span className="flex size-10 items-center justify-center rounded-md bg-secondary text-secondary-foreground">
           <Icon className="size-5" />
@@ -324,6 +327,7 @@ function Stat({
           <p className="mt-1 text-xs text-muted-foreground">{label}</p>
         </div>
       </CardContent>
+      </Link>
     </Card>
   );
 }

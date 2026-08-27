@@ -7,9 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { KIND_LABEL, OWNER_LABEL, STAGES, STAGE_META, formatDate, formatDateTime } from "@/lib/crm";
-import { useChangeStage, useContact, useTimeline } from "@/hooks/useCrmData";
-import type { Stage } from "@/lib/crm";
+import {
+  KIND_LABEL,
+  OWNER_LABEL,
+  STAGES,
+  STAGE_META,
+  TRACKS,
+  TRACK_META,
+  formatDate,
+  formatDateTime,
+} from "@/lib/crm";
+import { useChangeStage, useContact, useSetTrack, useTimeline } from "@/hooks/useCrmData";
+import type { Stage, Track } from "@/lib/crm";
 
 export const Route = createFileRoute("/contacten/$contactId")({
   head: () => ({
@@ -39,6 +48,7 @@ function ContactPage() {
   const contact = useContact(contactId);
   const timeline = useTimeline(contactId);
   const changeStage = useChangeStage();
+  const setTrack = useSetTrack();
 
   if (contact.isLoading) return <Skeleton className="h-96 w-full" />;
   if (!contact.data) {
@@ -85,7 +95,31 @@ function ContactPage() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Select
+            value={c.track}
+            onValueChange={(v) => setTrack.mutate({ contactId: c.id, track: v as Track })}
+          >
+            <SelectTrigger className="w-44" aria-label="Spoor">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TRACKS.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {TRACK_META[t].label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {c.track === "cursus" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setTrack.mutate({ contactId: c.id, track: "calculatie" })}
+            >
+              Haal uit cursus-pipeline
+            </Button>
+          )}
           <Select value={c.stage} onValueChange={(v) => changeStage.mutate({ contact: c, to: v as Stage })}>
             <SelectTrigger className="w-52">
               <SelectValue />

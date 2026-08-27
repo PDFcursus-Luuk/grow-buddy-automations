@@ -13,6 +13,20 @@ export const STAGES = [
 
 export type Stage = (typeof STAGES)[number];
 
+export const TRACKS = ["cursus", "calculatie", "overig"] as const;
+export type Track = (typeof TRACKS)[number];
+
+export const TRACK_META: Record<Track, { label: string; hint: string }> = {
+  cursus: { label: "Cursus", hint: "Hoort in de PDFcursus-pipeline" },
+  calculatie: { label: "Calculatie", hint: "Calculatiewerk, buiten de cursus-pipeline" },
+  overig: { label: "Overig", hint: "Partner, leverancier of intern" },
+};
+
+export function trackLabel(track: string | null | undefined) {
+  if (!track) return "-";
+  return TRACK_META[track as Track]?.label ?? track;
+}
+
 export const STAGE_META: Record<Stage, { label: string; hint: string; tone: string }> = {
   new_lead: {
     label: "Nieuwe lead",
