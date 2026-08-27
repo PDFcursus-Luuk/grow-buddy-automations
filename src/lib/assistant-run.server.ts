@@ -35,6 +35,7 @@ type SettingsRow = {
   ai_model: string;
   monthly_token_cap: number;
   business_context: string;
+  ignore_patterns: string[] | null;
 };
 
 type ContactRow = {
@@ -42,6 +43,8 @@ type ContactRow = {
   full_name: string;
   email: string | null;
   stage: string;
+  track: string;
+  is_internal: boolean;
   ai_summary: string | null;
   next_step: string | null;
   last_contact_at: string | null;
@@ -58,6 +61,16 @@ const analysisSchema = z.object({
   draft_subject: z.string().nullable(),
   draft_body: z.string().nullable(),
 });
+
+function isIgnored(email: string | null | undefined, patterns: string[]): boolean {
+  if (!email) return false;
+  const value = email.toLowerCase();
+  return patterns.some((raw) => {
+    const pattern = raw.trim().toLowerCase();
+    if (!pattern) return false;
+    return value === pattern || value.endsWith(`@${pattern}`) || value.includes(pattern);
+  });
+}
 
 function isoDaysFromNow(days: number): string {
   return new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
@@ -128,7 +141,7 @@ async function findOrCreateContact(
       stage: "new_lead",
       source: "gmail",
     } as never)
-    .select("id, full_name, email, stage, ai_summary, next_step, last_contact_at")
+    .select("id, full_name, email, stage, track, is_internal, ai_summary, next_step, last_contact_at")
     .single();
   if (error) throw error;
   const created = data as unknown as ContactRow;
@@ -136,7 +149,11 @@ async function findOrCreateContact(
   return created;
 }
 
-async function syncGmail(userId: string, contacts: ContactRow[]): Promise<number> {
+async function syncGmail(
+  userId: string,
+  contacts: ContactRow[],
+  ignorePatterns: string[],
+): Promise<number> {
   const cursor = await getCursor(userId, "gmail");
   const after = cursor ? Number(cursor) : Math.floor((Date.now() - 14 * 86_400_000) / 1000);
   const myAddress = await getMyAddress();
@@ -168,6 +185,7 @@ async function syncGmail(userId: string, contacts: ContactRow[]): Promise<number
     const counterpart = outbound ? to : from;
     if (!counterpart || counterpart.email === myAddress) continue;
     if (isNoiseSender(counterpart.email)) continue;
+    if (isIgnored(counterpart.email, ignorePatterns)) continue;
 
     const body = messageText(message);
     if (!body && !message.snippet) continue;
@@ -333,6 +351,16 @@ async function analyseContacts(
   for (const [contactId, events] of Array.from(grouped.entries()).slice(0, 20)) {
     const contact = contacts.find((c) => c.id === contactId);
     if (!contact) continue;
+    if (contact.is_internal || contact.track !== "cursus") {
+      await supabaseAdmin
+        .from("timeline_events")
+        .update({ processed_at: new Date().toISOString() } as never)
+        .in(
+          "id",
+          events.map((e) => e.id as string),
+        );
+      continue;
+    }
 
     const transcript = events
       .slice(-6)
@@ -468,12 +496,13 @@ export async function runAssistantForUser(userId: string, trigger: string): Prom
     const settings = await loadSettings(userId);
     const { data: contactRows } = await supabaseAdmin
       .from("contacts")
-      .select("id, full_name, email, stage, ai_summary, next_step, last_contact_at")
+      .select("id, full_name, email, stage, track, is_internal, ai_summary, next_step, last_contact_at")
       .eq("user_id", userId)
       .eq("is_archived", false);
     const contacts = (contactRows ?? []) as unknown as ContactRow[];
 
-    const emails = await syncGmail(userId, contacts);
+    const ignorePatterns = settings.ignore_patterns ?? [];
+    const emails = await syncGmail(userId, contacts, ignorePatterns);
     const notes = await syncDrive(userId, settings, contacts);
 
     const used = await tokensUsedThisMonth(userId);
