@@ -42,6 +42,43 @@ Niets wordt zonder jouw akkoord verstuurd. Drafts worden nooit automatisch verzo
 - **Campagnes** — reeksen van 3-5 mails (bijv. "warm houden", "herhaalopdracht", "nieuwe lead opvolgen"). De AI personaliseert per contact; elke stap komt als draft in je actielijst.
 - **Instellingen** — Drive-map kiezen, run-tijden, stiltedrempel, tone-of-voice voor drafts, Todoist-project.
 
+## Kosten en tokengebruik
+
+Uitgangspunt: 150 contacten, +50 per jaar. De AI draait **nooit** over je hele bestand — alleen over contacten met nieuwe activiteit sinds de vorige run. Realistisch is dat 10-30 contacten per dag, samen ongeveer 600-900 analyses per maand.
+
+Per analyse gaat er ~2.000-4.000 tokens in (nieuwe mailtekst, ingekort, plus een compacte contactsamenvatting) en ~400-600 tokens uit. Dat is circa 2-3 miljoen input- en 0,4 miljoen output-tokens per maand.
+
+Ruwe maandkosten, afhankelijk van het model:
+
+```text
+Gemini Flash Lite / Flash   ca. €1 - €5 per maand
+GPT-mini-klasse             ca. €5 - €12 per maand
+Frontier-model (GPT-5.x)    ca. €25 - €60 per maand
+```
+
+Voorstel: standaard een goedkoop, snel model (Gemini Flash Lite-klasse) voor de dagelijkse triage, en alleen voor het schrijven van een concept-mail eventueel een sterker model. Dan blijf je in de praktijk rond €2-6 per maand.
+
+### Waarom niet je Claude- of Gemini-abonnement
+
+- **Claude-abonnement** en **Gemini in Google Workspace** zijn eindgebruikersabonnementen zonder API-toegang. Een server die zonder jouw PC draait kan er niet bij. Claude Code/Desktop zou betekenen dat je machine aan moet staan — precies wat je niet wil.
+- **Superhuman AI** heeft geen publieke API; het werkt alleen in hun eigen client.
+
+### Wel goedkoper: je eigen Gemini API-key
+
+Je kunt in Google AI Studio (los van je Workspace-abonnement) een eigen Gemini API-key aanmaken. Die zetten we als secret in de app, en de CRM gebruikt die in plaats van Lovable-credits. Gemini Flash Lite heeft een gratis dagquotum dat voor dit volume ruim genoeg is, en daarboven kost het centen. Dan zijn je runtime-AI-kosten praktisch nul en gaat wat er wel is naar Google, niet naar Lovable-credits.
+
+Ik bouw de AI-laag daarom achter één schakelaar: **eigen Gemini-key** (standaard, goedkoopst) of **Lovable AI** (geen setup). Wisselen kan later zonder de app te verbouwen.
+
+### Tokens besparen door slim ontwerp
+
+- Regels vóór AI: "geen reactie in 14 dagen", "mail bevat een afspraakbevestiging", "notitiebestand toegevoegd" worden zonder AI afgehandeld. Alleen echt onduidelijke gevallen gaan naar het model.
+- Alleen nieuwe tekst mee, niet de hele thread; quotes, signatures en disclaimers worden eruit gestript.
+- Per contact één samengevoegde analyse per run in plaats van één per mail.
+- Nieuwsbrieven, no-reply-adressen en automatische antwoorden worden weggefilterd voordat er een token wordt gebruikt.
+- Per contact een korte, doorlopende samenvatting die als context meegaat, in plaats van de volledige historie.
+- Concept-mails worden alleen gegenereerd als je een voorstel goedkeurt, niet preventief voor iedereen.
+- Een maandplafond in de instellingen: bij overschrijding stopt de AI-laag en blijven de regel-gebaseerde signalen gewoon werken.
+
 ## Aanpak in fases
 
 **Fase 1 — CRM-kern**: database (contacten, bedrijven, pipeline-fases, tijdlijn-events, voorstellen, drafts, taken), inlog, kanban + contactdetail + dagoverzicht. Handmatig al bruikbaar.
