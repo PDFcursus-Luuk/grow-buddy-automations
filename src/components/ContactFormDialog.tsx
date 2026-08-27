@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { STAGES, STAGE_META } from "@/lib/crm";
+import { STAGES, STAGE_META, TRACKS, TRACK_META, type Track } from "@/lib/crm";
 import { useSaveContact, type Contact } from "@/hooks/useCrmData";
 
 export function ContactFormDialog({ contact }: { contact?: Contact }) {
@@ -26,6 +26,7 @@ export function ContactFormDialog({ contact }: { contact?: Contact }) {
     phone: contact?.phone ?? "",
     job_title: contact?.job_title ?? "",
     stage: contact?.stage ?? "new_lead",
+    track: contact?.track ?? "cursus",
     source: contact?.source ?? "",
     group_size: contact?.group_size?.toString() ?? "",
     deal_value: contact?.deal_value?.toString() ?? "",
@@ -48,6 +49,7 @@ export function ContactFormDialog({ contact }: { contact?: Contact }) {
         phone: form.phone.trim() || null,
         job_title: form.job_title.trim() || null,
         stage: form.stage,
+        track: form.track,
         source: form.source.trim() || null,
         group_size: form.group_size ? Number(form.group_size) : null,
         deal_value: form.deal_value ? Number(form.deal_value) : null,
@@ -119,6 +121,22 @@ export function ContactFormDialog({ contact }: { contact?: Contact }) {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="track">Spoor</Label>
+              <Select value={form.track} onValueChange={(v) => set("track", v)}>
+                <SelectTrigger id="track">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TRACKS.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {TRACK_META[t].label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">{TRACK_META[form.track as Track].hint}</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="source">Bron</Label>
