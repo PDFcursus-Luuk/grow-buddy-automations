@@ -4,16 +4,19 @@ Een persoonlijk CRM dat zelfstandig (2x per dag, in de cloud — jouw PC hoeft n
 
 ## Voorgestelde pipeline
 
-Je vroeg om advies. Voorstel — zeven fases, geschikt voor dienstverlening met herhaalklanten:
+Je vroeg om advies. Toegespitst op trainingen (pdfcursus.nl): demo, offerte, datum plannen, uitvoeren, vervolg.
 
 ```text
-1. Nieuwe lead        binnengekomen, nog geen contact
-2. Contact gelegd     eerste mail/gesprek gestuurd, wacht op reactie
-3. Gesprek gehad      call/Meet geweest, behoefte bekend
-4. Voorstel uit       aanbod/quote verstuurd, in beslissing
-5. Klant              lopende opdracht
-6. Herhaalklant       opdracht afgerond, kandidaat voor vervolg
-7. Koud / verloren    geen reactie of afgewezen (met reden)
+1. Nieuwe lead         aanvraag binnen, nog geen contact
+2. Contact gelegd      gereageerd, wacht op hun antwoord
+3. Demo gepland        demo/intake staat in de agenda
+4. Demo gehad          behoefte en groepsgrootte bekend
+5. Offerte uit         voorstel verstuurd, in beslissing
+6. Datum plannen       akkoord, trainingsdatum wordt vastgezet
+7. Ingeplande training  datum staat, voorbereiding loopt
+8. Gegeven / klant     training uitgevoerd
+9. Herhaalklant        kandidaat voor vervolgtraining of extra groep
+10. Koud / verloren    geen reactie of afgewezen (met reden)
 ```
 
 Extra signalen naast de fase: eigenaar van de volgende stap (jij of zij), datum laatste contact, en een automatische "wordt stil"-vlag na X dagen zonder reactie. Dat laatste is precies waar je nu leads verliest — de dagelijkse run zet zulke contacten bovenaan.
