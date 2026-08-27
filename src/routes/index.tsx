@@ -227,22 +227,11 @@ function TodayPage() {
         ) : (
           <div className="divide-y divide-border rounded-lg border border-border bg-card">
             {drafts.data!.map((d) => (
-              <div key={d.id} className="space-y-1 p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant={d.status === "created" ? "secondary" : d.status === "failed" ? "destructive" : "outline"}>
-                    {d.status === "created" ? "In mailbox" : d.status === "failed" ? "Mislukt" : "Klaar om te zetten"}
-                  </Badge>
-                  <p className="text-sm font-medium">{d.subject}</p>
-                  <span className="ml-auto text-xs text-muted-foreground">
-                    {d.contacts?.full_name ?? "Onbekend"} · {formatDateTime(d.created_at)}
-                  </span>
-                </div>
-                <p className="line-clamp-2 text-xs whitespace-pre-wrap text-muted-foreground">{d.body}</p>
-                {d.error && <p className="text-xs text-destructive">{d.error}</p>}
-              </div>
+              <DraftRow key={d.id} draft={d} />
             ))}
           </div>
         )}
+
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
