@@ -169,7 +169,7 @@ export function useSaveSettings() {
       const { data: userData } = await supabase.auth.getUser();
       const uid = userData.user?.id;
       if (!uid) throw new Error("Niet ingelogd");
-      const { error } = await supabase.from("crm_settings").update(patch).eq("user_id", uid);
+      const { error } = await supabase.from("crm_settings").update(patch as never).eq("user_id", uid);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -183,9 +183,9 @@ export function useSaveSettings() {
 export function useSaveContact() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { id?: string; values: Record<string, unknown> }) => {
+    mutationFn: async (input: { id?: string | undefined; values: Record<string, unknown> }) => {
       if (input.id) {
-        const { error } = await supabase.from("contacts").update(input.values).eq("id", input.id);
+        const { error } = await supabase.from("contacts").update(input.values as never).eq("id", input.id);
         if (error) throw error;
         return input.id;
       }
