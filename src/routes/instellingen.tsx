@@ -62,6 +62,7 @@ function SettingsPage() {
         monthly_token_cap: String(d["monthly_token_cap"] ?? 4000000),
         business_context: (d["business_context"] as string) ?? "",
         auto_run_enabled: Boolean(d["auto_run_enabled"]),
+        ignore_patterns: ((d["ignore_patterns"] as string[] | null) ?? []).join("\n"),
       });
     }
   }, [settings.data]);
@@ -132,6 +133,20 @@ function SettingsPage() {
               value={(form["signature"] as string) ?? ""}
               onChange={(e) => set("signature", e.target.value)}
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="ignore_patterns">Negeer deze adressen/domeinen</Label>
+            <Textarea
+              id="ignore_patterns"
+              rows={4}
+              placeholder={"lmcalculatie.nl\nausgaben@accountable.eu"}
+              value={(form["ignore_patterns"] as string) ?? ""}
+              onChange={(e) => set("ignore_patterns", e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Eén per regel. Van deze afzenders en ontvangers maakt de assistent geen lead aan — denk aan je eigen
+              domeinen en je boekhoudadres.
+            </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
@@ -278,6 +293,10 @@ function SettingsPage() {
               monthly_token_cap: Number(form["monthly_token_cap"]) || 4000000,
               business_context: form["business_context"] as string,
               auto_run_enabled: Boolean(form["auto_run_enabled"]),
+              ignore_patterns: ((form["ignore_patterns"] as string) ?? "")
+                .split("\n")
+                .map((line) => line.trim())
+                .filter(Boolean),
             })
           }
         >
