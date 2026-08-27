@@ -409,7 +409,16 @@ async function analyseContacts(
       }
     } catch (error) {
       if (NoObjectGeneratedError.isInstance(error)) {
-        console.error("[run] model gaf geen geldig antwoord voor", contact.id, error.text?.slice(0, 300));
+        console.error(
+          "[run] model gaf geen geldig antwoord voor",
+          contact.id,
+          "text:",
+          error.text?.slice(0, 300),
+          "msg:",
+          error.message?.slice(0, 300),
+          "cause:",
+          String(error.cause).slice(0, 400),
+        );
       } else {
         throw error;
       }
