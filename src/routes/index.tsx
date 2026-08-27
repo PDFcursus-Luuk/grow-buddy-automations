@@ -343,6 +343,8 @@ function Stat({
 function StaleRow({ contact }: { contact: Contact }) {
   const days = daysSince(contact.last_contact_at ?? contact.created_at);
   const nudge = useNudgeDraft();
+  const drafts = useDrafts();
+  const hasDraft = (drafts.data ?? []).some((d) => d.contact_id === contact.id);
   return (
     <div className="flex items-center gap-3 p-4 transition-colors hover:bg-secondary/50">
       <Link
@@ -359,11 +361,17 @@ function StaleRow({ contact }: { contact: Contact }) {
       <Button
         size="sm"
         variant="outline"
-        disabled={!contact.email || nudge.isPending}
+        disabled={!contact.email || nudge.isPending || hasDraft}
         onClick={() => nudge.mutate(contact.id)}
-        title={contact.email ? "AI-concept opstellen" : "Geen e-mailadres bekend"}
+        title={
+          !contact.email
+            ? "Geen e-mailadres bekend"
+            : hasDraft
+              ? "Er staat al een concept klaar voor dit contact"
+              : "AI-concept opstellen"
+        }
       >
-        <Sparkles className="mr-1.5 size-3.5" /> Concept
+        <Sparkles className="mr-1.5 size-3.5" /> {hasDraft ? "Concept klaar" : "Concept"}
       </Button>
     </div>
   );

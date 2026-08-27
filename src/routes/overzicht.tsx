@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useCompleteTask,
   useContacts,
+  useDrafts,
   useNudgeDraft,
   usePendingSuggestions,
   useResolveSuggestion,
@@ -200,6 +201,7 @@ function ContactTable({
   withDraft?: boolean;
 }) {
   const nudge = useNudgeDraft();
+  const drafts = useDrafts();
   if (contacts.length === 0) return <Empty text={empty} />;
   return (
     <div className="overflow-hidden rounded-lg border border-border">
@@ -235,15 +237,12 @@ function ContactTable({
                 <td className="px-4 py-2 text-muted-foreground">{days !== null ? `${days}d` : "nieuw"}</td>
                 {withDraft ? (
                   <td className="px-4 py-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={!c.email || nudge.isPending}
-                      onClick={() => nudge.mutate(c.id)}
-                      title={c.email ? "AI-concept opstellen" : "Geen e-mailadres bekend"}
-                    >
-                      <Sparkles className="mr-1.5 size-3.5" /> Concept
-                    </Button>
+                    <ConceptButton
+                      contact={c}
+                      hasDraft={(drafts.data ?? []).some((d) => d.contact_id === c.id)}
+                      pending={nudge.isPending}
+                      onGenerate={() => nudge.mutate(c.id)}
+                    />
                   </td>
                 ) : null}
               </tr>
@@ -261,5 +260,35 @@ function Empty({ text }: { text: string }) {
     <div className="rounded-lg border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
       {text}
     </div>
+  );
+}
+
+function ConceptButton({
+  contact,
+  hasDraft,
+  pending,
+  onGenerate,
+}: {
+  contact: Contact;
+  hasDraft: boolean;
+  pending: boolean;
+  onGenerate: () => void;
+}) {
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      disabled={!contact.email || pending || hasDraft}
+      onClick={onGenerate}
+      title={
+        !contact.email
+          ? "Geen e-mailadres bekend"
+          : hasDraft
+            ? "Er staat al een concept klaar voor dit contact"
+            : "AI-concept opstellen"
+      }
+    >
+      <Sparkles className="mr-1.5 size-3.5" /> {hasDraft ? "Concept klaar" : "Concept"}
+    </Button>
   );
 }
