@@ -3,6 +3,8 @@ import { useRef, useState } from "react";
 import { ArrowLeftRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { RequireAuth } from "@/components/RequireAuth";
 import { ContactFormDialog } from "@/components/ContactFormDialog";
+import { ContactIdentity } from "@/components/ContactIdentity";
+import { MergeDomainSuggestions } from "@/components/MergeDomainSuggestions";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -87,6 +89,8 @@ function PipelinePage() {
           <ContactFormDialog />
         </div>
       </header>
+
+      <MergeDomainSuggestions contacts={data ?? []} />
 
       {isLoading ? (
         <Skeleton className="h-96 w-full" />

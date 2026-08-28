@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { Check, Sparkles, X } from "lucide-react";
 import { RequireAuth } from "@/components/RequireAuth";
+import { ContactIdentity } from "@/components/ContactIdentity";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -232,9 +233,8 @@ function ContactTable({
                     params={{ contactId: c.id }}
                     className="font-medium hover:underline"
                   >
-                    {c.full_name}
+                    <ContactIdentity contact={c} />
                   </Link>
-                  <p className="text-xs text-muted-foreground">{c.email ?? "geen e-mail"}</p>
                 </td>
                 <td className="px-4 py-2">
                   <Badge variant="outline">{stageLabel(c.stage)}</Badge>
