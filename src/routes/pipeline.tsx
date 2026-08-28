@@ -143,6 +143,7 @@ function PipelinePage() {
             );
           })}
         </div>
+        </div>
       )}
     </div>
   );
