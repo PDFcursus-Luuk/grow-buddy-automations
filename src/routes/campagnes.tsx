@@ -21,7 +21,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { STAGES, stageLabel, type Stage } from "@/lib/crm";
 
 export const Route = createFileRoute("/campagnes")({
   head: () => ({
@@ -51,7 +59,11 @@ type Campaign = {
   name: string;
   goal: string | null;
   is_active: boolean;
+  trigger_stage: Stage | null;
 };
+
+/** "Geen trigger" kan niet als lege string in een Select, vandaar een sentinel. */
+const NO_TRIGGER = "__none__";
 
 type Step = {
   id: string;
@@ -70,7 +82,7 @@ function CampaignsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("campaigns")
-        .select("id, name, goal, is_active")
+        .select("id, name, goal, is_active, trigger_stage")
         .order("created_at");
       if (error) throw error;
       return data as Campaign[];
@@ -95,6 +107,18 @@ function CampaignsPage() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["campaigns"] }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const setTrigger = useMutation({
+    mutationFn: async ({ id, trigger_stage }: { id: string; trigger_stage: Stage | null }) => {
+      const { error } = await supabase.from("campaigns").update({ trigger_stage }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["campaigns"] });
+      toast.success("Startmoment opgeslagen");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -189,6 +213,38 @@ function CampaignsPage() {
                       ))}
                     </ol>
                   )}
+                  <div className="space-y-2 rounded-md border border-dashed border-border p-3">
+                    <Label htmlFor={`trigger-${c.id}`} className="text-xs">
+                      Start automatisch zodra een contact in deze fase komt
+                    </Label>
+                    <Select
+                      value={c.trigger_stage ?? NO_TRIGGER}
+                      onValueChange={(v) =>
+                        setTrigger.mutate({
+                          id: c.id,
+                          trigger_stage: v === NO_TRIGGER ? null : (v as Stage),
+                        })
+                      }
+                    >
+                      <SelectTrigger id={`trigger-${c.id}`}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={NO_TRIGGER}>Niet automatisch starten</SelectItem>
+                        {STAGES.map((stage) => (
+                          <SelectItem key={stage} value={stage}>
+                            {stageLabel(stage)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      {c.trigger_stage
+                        ? `Contacten in "${stageLabel(c.trigger_stage)}" worden vanzelf ingeschreven. Reageert iemand zelf, dan pauzeert de reeks.`
+                        : "Zonder startmoment loopt deze campagne alleen voor contacten die je zelf inschrijft."}
+                    </p>
+                  </div>
+
                   <NewStepDialog campaignId={c.id} nextOrder={own.length + 1} />
                 </CardContent>
               </Card>

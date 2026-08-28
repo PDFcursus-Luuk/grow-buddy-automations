@@ -31,3 +31,14 @@ export const generateNudgeDraft = createServerFn({ method: "POST" })
     const { generateNudgeDraftForContact } = await import("./nudge-draft.server");
     return generateNudgeDraftForContact(context.userId, data.contactId);
   });
+
+export const enrollInCampaign = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z.object({ contactId: z.string().uuid(), campaignId: z.string().uuid() }).parse(data),
+  )
+  .handler(async ({ context, data }) => {
+    const { enrollContact } = await import("./campaign-engine.server");
+    await enrollContact(context.userId, data.contactId, data.campaignId);
+    return { ok: true };
+  });

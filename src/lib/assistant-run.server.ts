@@ -15,6 +15,8 @@ import {
 } from "./gmail.server";
 
 import { STAGES } from "./crm";
+import { watchSilentContacts } from "./silence-watch.server";
+import { pauseEnrollmentsForContact, runCampaignsForUser } from "./campaign-engine.server";
 
 export type RunResult = {
   runId: string;
@@ -22,6 +24,10 @@ export type RunResult = {
   notes: number;
   analyzed: number;
   suggestions: number;
+  nudged: number;
+  cooled: number;
+  campaignSteps: number;
+  enrolled: number;
   skippedReason?: string;
 };
 
@@ -254,6 +260,10 @@ async function syncGmail(
     if (!outbound) patch["last_inbound_at"] = occurredAt;
     await supabaseAdmin.from("contacts").update(patch as never).eq("id", contact.id);
     contact.last_contact_at = occurredAt;
+
+    // Het contact reageert zelf: lopende campagnes stilzetten, zodat er nooit een
+    // geautomatiseerde reeks doorloopt terwijl je een echt gesprek voert.
+    if (!outbound) await pauseEnrollmentsForContact(userId, contact.id);
 
     // Concepten voor dit contact in de juiste thread laten landen.
     await supabaseAdmin
@@ -547,12 +557,39 @@ export async function runAssistantForUser(userId: string, trigger: string): Prom
 
     const used = await tokensUsedThisMonth(userId);
     let analysis = { analyzed: 0, suggestions: 0, tokensIn: 0, tokensOut: 0 };
+    let silence = { checked: 0, nudged: 0, cooled: 0, tokensIn: 0, tokensOut: 0 };
+    let campaigns = { enrolled: 0, stepsSent: 0, completed: 0, tokensIn: 0, tokensOut: 0 };
     let skippedReason: string | undefined;
+
     if (used >= settings.monthly_token_cap) {
       skippedReason = "Maandelijks tokenplafond bereikt — alleen mail en notities zijn opgehaald.";
     } else {
       analysis = await analyseContacts(userId, settings, contacts);
+
+      // Reageren op nieuwe post is niet genoeg: juist contacten die niets van zich
+      // laten horen glippen weg. Daarom actief op stilte controleren.
+      try {
+        silence = await watchSilentContacts(userId, settings.silence_days);
+      } catch (error) {
+        console.error(
+          "[run] stiltebewaking mislukt:",
+          error instanceof Error ? error.message : error,
+        );
+      }
+
+      // Meerstapsreeksen voor klanten: vervolgtraining, opfriscursus, nieuwe groep.
+      try {
+        campaigns = await runCampaignsForUser(userId);
+      } catch (error) {
+        console.error(
+          "[run] campagnes mislukt:",
+          error instanceof Error ? error.message : error,
+        );
+      }
     }
+
+    const suggestionsTotal =
+      analysis.suggestions + silence.nudged + silence.cooled + campaigns.stepsSent;
 
     await supabaseAdmin
       .from("run_logs")
@@ -561,9 +598,9 @@ export async function runAssistantForUser(userId: string, trigger: string): Prom
         emails_seen: emails,
         notes_seen: notes,
         contacts_analyzed: analysis.analyzed,
-        suggestions_created: analysis.suggestions,
-        tokens_in: analysis.tokensIn,
-        tokens_out: analysis.tokensOut,
+        suggestions_created: suggestionsTotal,
+        tokens_in: analysis.tokensIn + silence.tokensIn + campaigns.tokensIn,
+        tokens_out: analysis.tokensOut + silence.tokensOut + campaigns.tokensOut,
         error: skippedReason ?? null,
         finished_at: new Date().toISOString(),
       } as never)
@@ -574,7 +611,11 @@ export async function runAssistantForUser(userId: string, trigger: string): Prom
       emails,
       notes,
       analyzed: analysis.analyzed,
-      suggestions: analysis.suggestions,
+      suggestions: suggestionsTotal,
+      nudged: silence.nudged,
+      cooled: silence.cooled,
+      campaignSteps: campaigns.stepsSent,
+      enrolled: campaigns.enrolled,
       ...(skippedReason ? { skippedReason } : {}),
     };
   } catch (error) {
