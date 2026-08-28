@@ -264,9 +264,8 @@ async function syncDrive(
     if (!text) continue;
 
     const haystack = `${file.name}\n${text}`.toLowerCase();
-    const match =
-      contacts.find((c) => c.email && haystack.includes(c.email.toLowerCase())) ??
-      contacts.find((c) => c.full_name.length > 3 && haystack.includes(c.full_name.toLowerCase()));
+    const match = matchContactInText(haystack, contacts);
+
 
     const { error } = await supabaseAdmin.from("timeline_events").insert({
       user_id: userId,
