@@ -113,6 +113,8 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          stop_on_reply: boolean
+          trigger_stage: Database["public"]["Enums"]["crm_stage"] | null
           updated_at: string
           user_id: string
         }
@@ -122,6 +124,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          stop_on_reply?: boolean
+          trigger_stage?: Database["public"]["Enums"]["crm_stage"] | null
           updated_at?: string
           user_id: string
         }
@@ -131,6 +135,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          stop_on_reply?: boolean
+          trigger_stage?: Database["public"]["Enums"]["crm_stage"] | null
           updated_at?: string
           user_id?: string
         }
