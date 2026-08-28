@@ -18,7 +18,7 @@ import {
   useTasks,
   type Contact,
 } from "@/hooks/useCrmData";
-import { daysSince, formatDate, stageLabel } from "@/lib/crm";
+import { daysSince, formatDate, stageLabel, suggestionEffect } from "@/lib/crm";
 
 const tabSchema = z.object({
   tab: z.enum(["voorstellen", "leads", "stil", "taken"]).default("voorstellen"),
@@ -126,6 +126,12 @@ function OverviewPage() {
                       <p className="mt-1 whitespace-pre-line text-muted-foreground">{s.draft_body}</p>
                     </div>
                   )}
+                  <div className="rounded-md border border-dashed border-border bg-muted/40 p-3">
+                    <p className="text-xs font-medium tracking-wide uppercase text-muted-foreground">
+                      Als je goedkeurt
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">{suggestionEffect(s)}</p>
+                  </div>
                   <div className="flex gap-2">
                     <Button size="sm" onClick={() => resolve.mutate({ suggestion: s, approve: true })}>
                       <Check className="mr-1.5 size-3.5" /> Goedkeuren
