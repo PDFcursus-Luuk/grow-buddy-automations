@@ -450,3 +450,137 @@ export function useDeleteDraft() {
     onError: (e: Error) => toast.error(e.message),
   });
 }
+
+export function useMergeContacts() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      targetId,
+      sourceIds,
+      companyName,
+    }: {
+      targetId: string;
+      sourceIds: string[];
+      companyName: string;
+    }) => {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData.user?.id;
+      if (!uid) throw new Error("Niet ingelogd");
+      if (sourceIds.length === 0) throw new Error("Geen contacten om samen te voegen");
+
+      const { data: target, error: targetError } = await supabase
+        .from("contacts")
+        .select("id, full_name, email, notes, company_id")
+        .eq("id", targetId)
+        .single();
+      if (targetError) throw targetError;
+
+      const { data: sources, error: sourcesError } = await supabase
+        .from("contacts")
+        .select("id, full_name, email, phone, notes, company_id")
+        .in("id", sourceIds);
+      if (sourcesError) throw sourcesError;
+
+      // Alles van de bijrollen naar het hoofdcontact verplaatsen.
+      const moves = [
+        supabase.from("timeline_events").update({ contact_id: targetId }).in("contact_id", sourceIds),
+        supabase.from("suggestions").update({ contact_id: targetId }).in("contact_id", sourceIds),
+        supabase.from("email_drafts").update({ contact_id: targetId }).in("contact_id", sourceIds),
+        supabase.from("tasks").update({ contact_id: targetId }).in("contact_id", sourceIds),
+        supabase
+          .from("campaign_enrollments")
+          .update({ contact_id: targetId })
+          .in("contact_id", sourceIds),
+      ];
+      for (const move of moves) {
+        const { error } = await move;
+        if (error) throw error;
+      }
+
+      // Eén bedrijf voor het samengevoegde contact.
+      let companyId = target.company_id ?? (sources ?? []).find((s) => s.company_id)?.company_id ?? null;
+      if (!companyId) {
+        const { data: company, error: companyError } = await supabase
+          .from("companies")
+          .insert({ user_id: uid, name: companyName } as never)
+          .select("id")
+          .single();
+        if (companyError) throw companyError;
+        companyId = company.id as string;
+      }
+
+      const extra = (sources ?? [])
+        .map((s) => `${s.full_name}${s.email ? ` <${s.email}>` : ""}`)
+        .join("\n");
+      const notes = [target.notes, `Samengevoegde contactpersonen:\n${extra}`]
+        .filter(Boolean)
+        .join("\n\n");
+
+      const { error: updateError } = await supabase
+        .from("contacts")
+        .update({ company_id: companyId, notes } as never)
+        .eq("id", targetId);
+      if (updateError) throw updateError;
+
+      await supabase.from("timeline_events").insert({
+        user_id: uid,
+        contact_id: targetId,
+        kind: "system",
+        title: `${sourceIds.length} contactpersoon/personen samengevoegd`,
+        body: extra,
+        source: "manual",
+      } as never);
+
+      const { error: deleteError } = await supabase.from("contacts").delete().in("id", sourceIds);
+      if (deleteError) throw deleteError;
+    },
+    onSuccess: () => {
+      ["contacts", "suggestions", "tasks", "email_drafts"].forEach((key) =>
+        qc.invalidateQueries({ queryKey: [key] }),
+      );
+      toast.success("Contacten samengevoegd tot één klant");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+/** Zet alle contacten van een domein onder hetzelfde bedrijf, zonder samen te voegen. */
+export function useGroupUnderCompany() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ contactIds, companyName }: { contactIds: string[]; companyName: string }) => {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData.user?.id;
+      if (!uid) throw new Error("Niet ingelogd");
+
+      const { data: existing } = await supabase
+        .from("contacts")
+        .select("company_id")
+        .in("id", contactIds)
+        .not("company_id", "is", null)
+        .limit(1);
+
+      let companyId = existing?.[0]?.company_id ?? null;
+      if (!companyId) {
+        const { data: company, error } = await supabase
+          .from("companies")
+          .insert({ user_id: uid, name: companyName } as never)
+          .select("id")
+          .single();
+        if (error) throw error;
+        companyId = company.id as string;
+      }
+
+      const { error } = await supabase
+        .from("contacts")
+        .update({ company_id: companyId } as never)
+        .in("id", contactIds);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["contacts"] });
+      toast.success("Onder één bedrijf gezet");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
