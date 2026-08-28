@@ -76,6 +76,47 @@ function isoDaysFromNow(days: number): string {
   return new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
 }
 
+/** Losse zoektermen uit naam + e-mail, zodat "Hein Kwint | MP2 Schilders" ook matcht op "MP2 schilders". */
+function contactNeedles(contact: ContactRow): string[] {
+  const needles = new Set<string>();
+  const parts = contact.full_name
+    .toLowerCase()
+    .split(/[|,;/()\u2022]|\s[-–]\s/)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 3);
+  for (const part of parts) {
+    needles.add(part);
+    needles.add(part.replace(/\s+/g, ""));
+  }
+  if (contact.email) {
+    const email = contact.email.toLowerCase();
+    needles.add(email);
+    const domain = email.split("@")[1];
+    if (domain) {
+      const root = domain.split(".")[0];
+      if (root && root.length > 3) needles.add(root);
+    }
+  }
+  return Array.from(needles).filter((n) => n.length > 3);
+}
+
+function matchContactInText(haystack: string, contacts: ContactRow[]): ContactRow | undefined {
+  const flat = haystack.replace(/\s+/g, "");
+  let best: { contact: ContactRow; score: number } | undefined;
+  for (const contact of contacts) {
+    if (contact.is_internal) continue;
+    let score = 0;
+    for (const needle of contactNeedles(contact)) {
+      if (haystack.includes(needle) || flat.includes(needle.replace(/\s+/g, ""))) {
+        score += needle.length;
+      }
+    }
+    if (score > 0 && (!best || score > best.score)) best = { contact, score };
+  }
+  return best?.contact;
+}
+
+
 async function loadSettings(userId: string): Promise<SettingsRow> {
   const { data } = await supabaseAdmin
     .from("crm_settings")
