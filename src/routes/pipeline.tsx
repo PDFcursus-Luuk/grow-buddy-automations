@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowLeftRight } from "lucide-react";
+import { useRef, useState } from "react";
+import { ArrowLeftRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { RequireAuth } from "@/components/RequireAuth";
 import { ContactFormDialog } from "@/components/ContactFormDialog";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +43,7 @@ function PipelinePage() {
   const [track, setTrack] = useState<Track | "alle">("cursus");
   const { data, isLoading } = useContacts(track);
   const [query, setQuery] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const filtered = (data ?? []).filter((c) =>
     [c.full_name, c.email, c.job_title, c.source]
@@ -51,6 +52,10 @@ function PipelinePage() {
       .toLowerCase()
       .includes(query.toLowerCase()),
   );
+
+  const scrollBy = (dir: 1 | -1) => {
+    scrollRef.current?.scrollBy({ left: dir * 320, behavior: "smooth" });
+  };
 
   return (
     <div className="space-y-8">
@@ -86,7 +91,33 @@ function PipelinePage() {
       {isLoading ? (
         <Skeleton className="h-96 w-full" />
       ) : (
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        <div className="relative">
+          <div className="mb-3 flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={() => scrollBy(-1)}
+              aria-label="Scroll naar links"
+              className="size-9 shrink-0"
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              Gebruik de pijlen om door de fases te bladeren
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={() => scrollBy(1)}
+              aria-label="Scroll naar rechts"
+              className="size-9 shrink-0"
+            >
+              <ChevronRight className="size-4" />
+            </Button>
+          </div>
+        <div ref={scrollRef} className="flex gap-4 overflow-x-auto pb-4 scroll-smooth">
           {STAGES.map((stage) => {
             const items = filtered.filter((c) => c.stage === stage);
             return (
@@ -111,6 +142,7 @@ function PipelinePage() {
               </div>
             );
           })}
+        </div>
         </div>
       )}
     </div>
