@@ -52,7 +52,14 @@ import {
   type EmailDraft,
   type Suggestion,
 } from "@/hooks/useCrmData";
-import { STAGE_META, daysSince, formatDate, formatDateTime, stageLabel } from "@/lib/crm";
+import {
+  STAGE_META,
+  daysSince,
+  formatDate,
+  formatDateTime,
+  stageLabel,
+  suggestionEffect,
+} from "@/lib/crm";
 
 export const Route = createFileRoute("/")({
   head: () => ({
