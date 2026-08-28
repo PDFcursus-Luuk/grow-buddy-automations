@@ -192,6 +192,12 @@ function TodayPage() {
                     </div>
                   )}
                   <p className="text-sm text-muted-foreground">{s.reason}</p>
+                  <div className="rounded-md border border-dashed border-border bg-muted/40 p-3">
+                    <p className="text-xs font-medium tracking-wide uppercase text-muted-foreground">
+                      Als je goedkeurt
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">{suggestionEffect(s)}</p>
+                  </div>
                   <div className="flex gap-2 pt-1">
                     <Button
                       size="sm"
