@@ -16,6 +16,7 @@ import {
   TRACK_META,
   formatDate,
   formatDateTime,
+  contactCompanyName,
 } from "@/lib/crm";
 import { useChangeStage, useContact, useSetTrack, useTimeline } from "@/hooks/useCrmData";
 import type { Stage, Track } from "@/lib/crm";
@@ -74,9 +75,12 @@ function ContactPage() {
 
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-4xl">{c.full_name}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {[c.job_title, c.companies?.name, c.source && `via ${c.source}`].filter(Boolean).join(" · ") || "—"}
+          <h1 className="text-4xl font-semibold">{contactCompanyName(c) ?? c.full_name}</h1>
+          <p className="mt-1 text-sm text-foreground">
+            {[c.full_name, c.email].filter(Boolean).join(" · ")}
+          </p>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            {[c.job_title, c.source && `via ${c.source}`].filter(Boolean).join(" · ") || "—"}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {c.email && (

@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { RequireAuth } from "@/components/RequireAuth";
 import { ContactFormDialog } from "@/components/ContactFormDialog";
+import { ContactIdentity } from "@/components/ContactIdentity";
+import { MergeDomainSuggestions } from "@/components/MergeDomainSuggestions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -142,6 +144,8 @@ function TodayPage() {
         <Stat icon={AlarmClock} label={`Stil ≥ ${silenceDays} dagen`} value={stale.length} tab="stil" />
         <Stat icon={Check} label="Open taken" value={tasks.data?.length ?? 0} tab="taken" />
       </div>
+
+      <MergeDomainSuggestions contacts={list} />
 
       <section className="space-y-4">
         <div className="flex items-center gap-2">
@@ -365,10 +369,8 @@ function StaleRow({ contact }: { contact: Contact }) {
         params={{ contactId: contact.id }}
         className="min-w-0 flex-1"
       >
-        <p className="truncate text-sm font-medium">{contact.full_name}</p>
-        <p className="truncate text-xs text-muted-foreground">
-          {contact.email ?? "geen e-mail"} · {STAGE_META[contact.stage].label}
-        </p>
+        <ContactIdentity contact={contact} />
+        <p className="truncate text-xs text-muted-foreground">{STAGE_META[contact.stage].label}</p>
       </Link>
       <Badge variant="outline">{days} dagen</Badge>
       <Button

@@ -3,6 +3,8 @@ import { useRef, useState } from "react";
 import { ArrowLeftRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { RequireAuth } from "@/components/RequireAuth";
 import { ContactFormDialog } from "@/components/ContactFormDialog";
+import { ContactIdentity } from "@/components/ContactIdentity";
+import { MergeDomainSuggestions } from "@/components/MergeDomainSuggestions";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -46,7 +48,7 @@ function PipelinePage() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const filtered = (data ?? []).filter((c) =>
-    [c.full_name, c.email, c.job_title, c.source]
+    [c.full_name, c.email, c.job_title, c.source, c.companies?.name]
       .filter(Boolean)
       .join(" ")
       .toLowerCase()
@@ -87,6 +89,8 @@ function PipelinePage() {
           <ContactFormDialog />
         </div>
       </header>
+
+      <MergeDomainSuggestions contacts={data ?? []} />
 
       {isLoading ? (
         <Skeleton className="h-96 w-full" />
@@ -160,9 +164,9 @@ function PipelineCard({ contact }: { contact: Contact }) {
         params={{ contactId: contact.id }}
         className="block hover:underline"
       >
-        <p className="text-sm font-semibold">{contact.full_name}</p>
-        <p className="truncate text-xs text-muted-foreground">{contact.job_title ?? contact.email ?? "—"}</p>
+        <ContactIdentity contact={contact} />
       </Link>
+
 
       {contact.next_step && <p className="mt-3 text-xs text-foreground">→ {contact.next_step}</p>}
 

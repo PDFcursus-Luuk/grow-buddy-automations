@@ -165,3 +165,85 @@ export function suggestionEffect(s: SuggestionEffectInput): string {
       return "Er gebeurt niets automatisch buiten dit voorstel.";
   }
 }
+
+/** Vrije e-maildomeinen: die zeggen niets over een bedrijf. */
+export const GENERIC_EMAIL_DOMAINS = new Set([
+  "gmail.com",
+  "googlemail.com",
+  "hotmail.com",
+  "hotmail.nl",
+  "outlook.com",
+  "outlook.nl",
+  "live.nl",
+  "live.com",
+  "icloud.com",
+  "me.com",
+  "yahoo.com",
+  "ziggo.nl",
+  "kpnmail.nl",
+  "planet.nl",
+  "home.nl",
+  "upcmail.nl",
+  "telfort.nl",
+  "xs4all.nl",
+  "casema.nl",
+  "chello.nl",
+  "protonmail.com",
+]);
+
+export function emailDomain(email: string | null | undefined): string | null {
+  if (!email) return null;
+  const at = email.lastIndexOf("@");
+  if (at < 0) return null;
+  const domain = email.slice(at + 1).trim().toLowerCase();
+  return domain.includes(".") ? domain : null;
+}
+
+/** Bedrijfsnaam afgeleid van het maildomein, bv. ditt.nl -> Ditt */
+export function domainLabel(domain: string): string {
+  const root = domain.split(".")[0] ?? domain;
+  return root.charAt(0).toUpperCase() + root.slice(1);
+}
+
+export type ContactLike = {
+  id: string;
+  full_name: string;
+  email: string | null;
+  company_id?: string | null;
+  companies?: { id: string; name: string } | null;
+};
+
+/** Naam van het bedrijf: uit het bedrijfsveld, anders uit het maildomein. */
+export function contactCompanyName(contact: ContactLike): string | null {
+  if (contact.companies?.name) return contact.companies.name;
+  const domain = emailDomain(contact.email);
+  if (!domain || GENERIC_EMAIL_DOMAINS.has(domain)) return null;
+  return domainLabel(domain);
+}
+
+export type DomainGroup<T extends ContactLike> = {
+  domain: string;
+  label: string;
+  contacts: T[];
+};
+
+/** Groepen contacten die hetzelfde zakelijke maildomein delen (2 of meer). */
+export function findDomainGroups<T extends ContactLike>(contacts: T[]): DomainGroup<T>[] {
+  const byDomain = new Map<string, T[]>();
+  for (const c of contacts) {
+    const domain = emailDomain(c.email);
+    if (!domain || GENERIC_EMAIL_DOMAINS.has(domain)) continue;
+    const list = byDomain.get(domain) ?? [];
+    list.push(c);
+    byDomain.set(domain, list);
+  }
+  return [...byDomain.entries()]
+    .filter(([, list]) => list.length > 1)
+    .map(([domain, list]) => ({
+      domain,
+      label:
+        list.find((c) => c.companies?.name)?.companies?.name ?? domainLabel(domain),
+      contacts: list,
+    }))
+    .sort((a, b) => b.contacts.length - a.contacts.length);
+}
