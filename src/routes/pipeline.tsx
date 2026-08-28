@@ -43,6 +43,7 @@ function PipelinePage() {
   const [track, setTrack] = useState<Track | "alle">("cursus");
   const { data, isLoading } = useContacts(track);
   const [query, setQuery] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const filtered = (data ?? []).filter((c) =>
     [c.full_name, c.email, c.job_title, c.source]
@@ -51,6 +52,10 @@ function PipelinePage() {
       .toLowerCase()
       .includes(query.toLowerCase()),
   );
+
+  const scrollBy = (dir: 1 | -1) => {
+    scrollRef.current?.scrollBy({ left: dir * 320, behavior: "smooth" });
+  };
 
   return (
     <div className="space-y-8">
