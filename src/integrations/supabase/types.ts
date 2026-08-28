@@ -17,7 +17,6 @@ export type Database = {
       campaign_enrollments: {
         Row: {
           campaign_id: string
-          completed_at: string | null
           contact_id: string
           created_at: string
           current_step: number
@@ -29,7 +28,6 @@ export type Database = {
         }
         Insert: {
           campaign_id: string
-          completed_at?: string | null
           contact_id: string
           created_at?: string
           current_step?: number
@@ -41,7 +39,6 @@ export type Database = {
         }
         Update: {
           campaign_id?: string
-          completed_at?: string | null
           contact_id?: string
           created_at?: string
           current_step?: number
@@ -116,8 +113,6 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
-          stop_on_reply: boolean
-          trigger_stage: Database["public"]["Enums"]["crm_stage"] | null
           updated_at: string
           user_id: string
         }
@@ -127,8 +122,6 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
-          stop_on_reply?: boolean
-          trigger_stage?: Database["public"]["Enums"]["crm_stage"] | null
           updated_at?: string
           user_id: string
         }
@@ -138,8 +131,6 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
-          stop_on_reply?: boolean
-          trigger_stage?: Database["public"]["Enums"]["crm_stage"] | null
           updated_at?: string
           user_id?: string
         }
@@ -191,7 +182,6 @@ export type Database = {
           job_title: string | null
           last_contact_at: string | null
           last_inbound_at: string | null
-          last_nudge_at: string | null
           next_step: string | null
           next_step_due: string | null
           next_step_owner: Database["public"]["Enums"]["next_step_owner"]
@@ -218,7 +208,6 @@ export type Database = {
           job_title?: string | null
           last_contact_at?: string | null
           last_inbound_at?: string | null
-          last_nudge_at?: string | null
           next_step?: string | null
           next_step_due?: string | null
           next_step_owner?: Database["public"]["Enums"]["next_step_owner"]
@@ -245,7 +234,6 @@ export type Database = {
           job_title?: string | null
           last_contact_at?: string | null
           last_inbound_at?: string | null
-          last_nudge_at?: string | null
           next_step?: string | null
           next_step_due?: string | null
           next_step_owner?: Database["public"]["Enums"]["next_step_owner"]
