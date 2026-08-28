@@ -48,7 +48,7 @@ function PipelinePage() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const filtered = (data ?? []).filter((c) =>
-    [c.full_name, c.email, c.job_title, c.source]
+    [c.full_name, c.email, c.job_title, c.source, c.companies?.name]
       .filter(Boolean)
       .join(" ")
       .toLowerCase()
