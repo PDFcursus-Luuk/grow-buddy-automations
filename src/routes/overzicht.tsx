@@ -125,6 +125,7 @@ function OverviewPage() {
                       <p className="font-medium">{s.draft_subject}</p>
                       <p className="mt-1 whitespace-pre-line text-muted-foreground">{s.draft_body}</p>
                     </div>
+                  )}
                   <div className="rounded-md border border-dashed border-border bg-muted/40 p-3">
                     <p className="text-xs font-medium tracking-wide uppercase text-muted-foreground">
                       Als je goedkeurt
