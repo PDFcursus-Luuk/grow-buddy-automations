@@ -160,9 +160,9 @@ function PipelineCard({ contact }: { contact: Contact }) {
         params={{ contactId: contact.id }}
         className="block hover:underline"
       >
-        <p className="text-sm font-semibold">{contact.full_name}</p>
-        <p className="truncate text-xs text-muted-foreground">{contact.job_title ?? contact.email ?? "—"}</p>
+        <ContactIdentity contact={contact} />
       </Link>
+
 
       {contact.next_step && <p className="mt-3 text-xs text-foreground">→ {contact.next_step}</p>}
 
