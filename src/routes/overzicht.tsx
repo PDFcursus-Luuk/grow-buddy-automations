@@ -18,7 +18,7 @@ import {
   useTasks,
   type Contact,
 } from "@/hooks/useCrmData";
-import { daysSince, formatDate, stageLabel } from "@/lib/crm";
+import { daysSince, formatDate, stageLabel, suggestionEffect } from "@/lib/crm";
 
 const tabSchema = z.object({
   tab: z.enum(["voorstellen", "leads", "stil", "taken"]).default("voorstellen"),
