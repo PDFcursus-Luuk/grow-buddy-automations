@@ -139,3 +139,29 @@ export function initials(name: string) {
     .map((part) => part[0]?.toUpperCase() ?? "")
     .join("");
 }
+
+export type SuggestionEffectInput = {
+  type: "stage_change" | "follow_up" | "draft" | "enrich";
+  to_stage?: string | null;
+  proposed_action?: string | null;
+  proposed_due_date?: string | null;
+  draft_subject?: string | null;
+};
+
+/** Legt in gewone taal uit wat er gebeurt als je dit voorstel goedkeurt. */
+export function suggestionEffect(s: SuggestionEffectInput): string {
+  switch (s.type) {
+    case "stage_change":
+      return `Het contact schuift in de pipeline naar "${stageLabel(s.to_stage)}". Er gaat geen mail uit.`;
+    case "follow_up":
+      return `Er komt een taak op je lijst${
+        s.proposed_due_date ? ` met datum ${formatDate(s.proposed_due_date)}` : ""
+      }: "${s.proposed_action ?? "Follow-up"}". Geen mail, geen faseverandering.`;
+    case "draft":
+      return "Er wordt een mailconcept aangemaakt bij Mailconcepten. Je kunt het daar aanpassen en pas met \u201eNaar mailbox\u201d gaat het als concept naar Gmail/Superhuman. Er wordt niets verstuurd.";
+    case "enrich":
+      return "Alleen een aantekening bij het contact. Er gaat geen mail uit en de fase blijft gelijk.";
+    default:
+      return "Er gebeurt niets automatisch buiten dit voorstel.";
+  }
+}
