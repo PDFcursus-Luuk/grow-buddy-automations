@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowLeftRight } from "lucide-react";
+import { useRef, useState } from "react";
+import { ArrowLeftRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { RequireAuth } from "@/components/RequireAuth";
 import { ContactFormDialog } from "@/components/ContactFormDialog";
 import { Badge } from "@/components/ui/badge";
