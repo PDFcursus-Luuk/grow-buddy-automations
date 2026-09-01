@@ -109,7 +109,7 @@ function TodayPage() {
 
   const silenceDays = settings.data?.silence_days ?? 14;
   const list = contacts.data ?? [];
-  const active = list.filter((c) => c.stage !== "cold");
+  const active = list.filter((c) => c.stage !== "cold" && c.stage !== "lost");
   const stale = active
     .filter((c) => {
       const d = daysSince(c.last_contact_at ?? c.created_at);
