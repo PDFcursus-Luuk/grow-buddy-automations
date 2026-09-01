@@ -27,6 +27,7 @@ async function handleRun() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { runAssistantForUser } = await import("@/lib/assistant-run.server");
   const { pushPendingDrafts, pushOpenTasks } = await import("@/lib/assistant-actions.server");
+  const { syncDraftStatuses } = await import("@/lib/draft-status.server");
 
   const { data: users, error } = await supabaseAdmin
     .from("crm_settings")
