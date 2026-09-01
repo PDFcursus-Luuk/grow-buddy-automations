@@ -7,6 +7,7 @@ import {
   pushDraftsToGmail,
   pushTasksToTodoist,
   runAssistant,
+  syncDrafts,
 } from "@/lib/assistant.functions";
 
 
@@ -341,7 +342,9 @@ export type EmailDraft = {
   id: string;
   subject: string;
   body: string;
-  status: "pending" | "created" | "failed" | "discarded";
+  status: "pending" | "created" | "failed" | "discarded" | "sent" | "deleted";
+  sent_at?: string | null;
+  checked_at?: string | null;
   error: string | null;
   gmail_draft_id: string | null;
   created_at: string;
@@ -362,6 +365,41 @@ export function useDrafts() {
       if (error) throw error;
       return data as unknown as EmailDraft[];
     },
+  });
+}
+
+export function useSentDrafts() {
+  return useQuery({
+    queryKey: ["email_drafts_sent"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("email_drafts")
+        .select("*, contacts(id, full_name, email)")
+        .eq("status", "sent")
+        .order("sent_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data as unknown as EmailDraft[];
+    },
+  });
+}
+
+export function useSyncDrafts() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => syncDrafts(),
+    onSuccess: (result) => {
+      ["email_drafts", "email_drafts_sent", "contacts"].forEach((key) =>
+        qc.invalidateQueries({ queryKey: [key] }),
+      );
+      if (result.checked === 0) toast.info("Er staan geen concepten in je mailbox om te controleren");
+      else
+        toast.success(`${result.sent} verstuurd, ${result.stillDraft} nog concept`, {
+          description:
+            result.removed > 0 ? `${result.removed} concept(en) waren uit je mailbox verwijderd.` : undefined,
+        });
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 }
 

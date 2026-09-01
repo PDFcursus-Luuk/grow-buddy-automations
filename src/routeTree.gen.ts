@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as BenaderdRouteImport } from './routes/benaderd'
 import { Route as CampagnesRouteImport } from './routes/campagnes'
 import { Route as InstellingenRouteImport } from './routes/instellingen'
 import { Route as OverzichtRouteImport } from './routes/overzicht'
@@ -26,6 +27,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BenaderdRoute = BenaderdRouteImport.update({
+  id: '/benaderd',
+  path: '/benaderd',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CampagnesRoute = CampagnesRouteImport.update({
@@ -62,6 +68,7 @@ const ApiPublicAssistantRunRoute = ApiPublicAssistantRunRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/benaderd': typeof BenaderdRoute
   '/campagnes': typeof CampagnesRoute
   '/instellingen': typeof InstellingenRoute
   '/overzicht': typeof OverzichtRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/benaderd': typeof BenaderdRoute
   '/campagnes': typeof CampagnesRoute
   '/instellingen': typeof InstellingenRoute
   '/overzicht': typeof OverzichtRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/benaderd': typeof BenaderdRoute
   '/campagnes': typeof CampagnesRoute
   '/instellingen': typeof InstellingenRoute
   '/overzicht': typeof OverzichtRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/benaderd'
     | '/campagnes'
     | '/instellingen'
     | '/overzicht'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/benaderd'
     | '/campagnes'
     | '/instellingen'
     | '/overzicht'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/benaderd'
     | '/campagnes'
     | '/instellingen'
     | '/overzicht'
@@ -126,6 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  BenaderdRoute: typeof BenaderdRoute
   CampagnesRoute: typeof CampagnesRoute
   InstellingenRoute: typeof InstellingenRoute
   OverzichtRoute: typeof OverzichtRoute
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/benaderd': {
+      id: '/benaderd'
+      path: '/benaderd'
+      fullPath: '/benaderd'
+      preLoaderRoute: typeof BenaderdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/campagnes': {
@@ -198,6 +218,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  BenaderdRoute: BenaderdRoute,
   CampagnesRoute: CampagnesRoute,
   InstellingenRoute: InstellingenRoute,
   OverzichtRoute: OverzichtRoute,

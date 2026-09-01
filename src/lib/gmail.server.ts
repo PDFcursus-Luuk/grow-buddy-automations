@@ -146,3 +146,22 @@ export async function createGmailDraft(input: {
   });
   return (await response.json()) as { id: string; message?: { threadId?: string } };
 }
+
+export async function listGmailDraftIds(): Promise<Set<string>> {
+  const response = await gmailJson<{ drafts?: { id: string }[] }>("/users/me/drafts?maxResults=200");
+  return new Set((response.drafts ?? []).map((d) => d.id));
+}
+
+export async function findSentMessageInThread(
+  threadId: string,
+  afterEpochMs: number,
+): Promise<GmailMessage | null> {
+  const thread = await gmailJson<{ messages?: GmailMessage[] }>(
+    `/users/me/threads/${threadId}?format=metadata`,
+  );
+  const sent = (thread.messages ?? [])
+    .filter((m) => (m.labelIds ?? []).includes("SENT"))
+    .filter((m) => Number(m.internalDate ?? 0) >= afterEpochMs - 60_000)
+    .sort((a, b) => Number(b.internalDate ?? 0) - Number(a.internalDate ?? 0));
+  return sent[0] ?? null;
+}

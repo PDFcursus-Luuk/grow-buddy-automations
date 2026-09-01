@@ -336,12 +336,14 @@ export type Database = {
       email_drafts: {
         Row: {
           body: string
+          checked_at: string | null
           contact_id: string | null
           created_at: string
           error: string | null
           gmail_draft_id: string | null
           gmail_thread_id: string | null
           id: string
+          sent_at: string | null
           status: Database["public"]["Enums"]["draft_status"]
           subject: string
           suggestion_id: string | null
@@ -350,12 +352,14 @@ export type Database = {
         }
         Insert: {
           body: string
+          checked_at?: string | null
           contact_id?: string | null
           created_at?: string
           error?: string | null
           gmail_draft_id?: string | null
           gmail_thread_id?: string | null
           id?: string
+          sent_at?: string | null
           status?: Database["public"]["Enums"]["draft_status"]
           subject: string
           suggestion_id?: string | null
@@ -364,12 +368,14 @@ export type Database = {
         }
         Update: {
           body?: string
+          checked_at?: string | null
           contact_id?: string | null
           created_at?: string
           error?: string | null
           gmail_draft_id?: string | null
           gmail_thread_id?: string | null
           id?: string
+          sent_at?: string | null
           status?: Database["public"]["Enums"]["draft_status"]
           subject?: string
           suggestion_id?: string | null
@@ -675,7 +681,13 @@ export type Database = {
         | "repeat_customer"
         | "cold"
         | "lost"
-      draft_status: "pending" | "created" | "failed" | "discarded"
+      draft_status:
+        | "pending"
+        | "created"
+        | "failed"
+        | "discarded"
+        | "sent"
+        | "deleted"
       next_step_owner: "me" | "them" | "none"
       suggestion_status: "pending" | "approved" | "rejected" | "expired"
       suggestion_type: "stage_change" | "follow_up" | "draft" | "enrich"
@@ -830,7 +842,14 @@ export const Constants = {
         "cold",
         "lost",
       ],
-      draft_status: ["pending", "created", "failed", "discarded"],
+      draft_status: [
+        "pending",
+        "created",
+        "failed",
+        "discarded",
+        "sent",
+        "deleted",
+      ],
       next_step_owner: ["me", "them", "none"],
       suggestion_status: ["pending", "approved", "rejected", "expired"],
       suggestion_type: ["stage_change", "follow_up", "draft", "enrich"],
