@@ -2,7 +2,15 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { createGmailDraft, getMessage } from "./gmail.server";
 import { createTodoistTask, todoistEnabled } from "./todoist.server";
 
-export async function pushPendingDrafts(userId: string): Promise<{ created: number; failed: number }> {
+export async function pushPendingDrafts(
+  userId: string,
+): Promise<{ created: number; failed: number; alreadyInMailbox: number }> {
+  const { count: alreadyInMailbox } = await supabaseAdmin
+    .from("email_drafts")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("status", "created");
+
   const { data: drafts } = await supabaseAdmin
     .from("email_drafts")
     .select("id, subject, body, contact_id, gmail_thread_id")
@@ -87,7 +95,7 @@ export async function pushPendingDrafts(userId: string): Promise<{ created: numb
     }
   }
 
-  return { created, failed };
+  return { created, failed, alreadyInMailbox: alreadyInMailbox ?? 0 };
 }
 
 export async function pushOpenTasks(userId: string): Promise<{ created: number; enabled: boolean }> {
