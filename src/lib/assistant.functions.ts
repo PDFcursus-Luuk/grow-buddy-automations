@@ -42,3 +42,10 @@ export const enrollInCampaign = createServerFn({ method: "POST" })
     await enrollContact(context.userId, data.contactId, data.campaignId);
     return { ok: true };
   });
+
+export const syncDrafts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { syncDraftStatuses } = await import("./draft-status.server");
+    return syncDraftStatuses(context.userId);
+  });
