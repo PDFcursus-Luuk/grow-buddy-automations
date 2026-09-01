@@ -48,6 +48,7 @@ import {
   usePushTasks,
   useResolveSuggestion,
   useRunAssistant,
+  useSyncDrafts,
   useSettings,
   useTasks,
   type Contact,
@@ -104,6 +105,7 @@ function TodayPage() {
   const drafts = useDrafts();
   const pushDrafts = usePushDrafts();
   const pushTasks = usePushTasks();
+  const syncDrafts = useSyncDrafts();
 
   const silenceDays = settings.data?.silence_days ?? 14;
   const list = contacts.data ?? [];
@@ -243,6 +245,16 @@ function TodayPage() {
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-2xl">Mailconcepten</h2>
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={syncDrafts.isPending}
+            onClick={() => syncDrafts.mutate()}
+            title="Kijk in je mailbox welke concepten je hebt verstuurd"
+          >
+            <RefreshCw className={`mr-1.5 size-4 ${syncDrafts.isPending ? "animate-spin" : ""}`} />
+            Controleer status
+          </Button>
           <Button
             size="sm"
             variant="outline"
