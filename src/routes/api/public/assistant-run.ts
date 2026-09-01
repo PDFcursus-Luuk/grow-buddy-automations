@@ -42,7 +42,9 @@ async function handleRun() {
       const run = await runAssistantForUser(userId, "cron");
       const drafts = await pushPendingDrafts(userId);
       const tasks = await pushOpenTasks(userId);
-      results.push({ userId, ...run, drafts, tasks });
+      // Eerst kijken wat er echt verstuurd is, zodat stille contacten kloppen.
+      const draftStatus = await syncDraftStatuses(userId);
+      results.push({ userId, ...run, drafts, tasks, draftStatus });
     } catch (runError) {
       const message = runError instanceof Error ? runError.message : String(runError);
       console.error(`[cron] run failed for ${userId}: ${message}`);
