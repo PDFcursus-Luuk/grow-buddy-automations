@@ -165,3 +165,31 @@ export async function findSentMessageInThread(
     .sort((a, b) => Number(b.internalDate ?? 0) - Number(a.internalDate ?? 0));
   return sent[0] ?? null;
 }
+
+/**
+ * Zoekt een verstuurde mail aan een adres, ongeacht in welk gesprek.
+ *
+ * Superhuman verstuurt een concept niet altijd binnen hetzelfde Gmail-gesprek:
+ * het concept verdwijnt en de mail komt als nieuw gesprek in Verzonden. Zoeken
+ * op ontvanger + datum is daarom de betrouwbare manier om te zien of je iemand
+ * daadwerkelijk gemaild hebt.
+ */
+export async function findSentMessageToRecipient(
+  email: string,
+  afterEpochMs: number,
+): Promise<GmailMessage | null> {
+  const afterSeconds = Math.floor(Math.max(0, afterEpochMs - 86_400_000) / 1000);
+  const query = encodeURIComponent(`in:sent to:${email} after:${afterSeconds}`);
+  const data = await gmailJson<{ messages?: { id: string }[] }>(
+    `/users/me/messages?maxResults=20&q=${query}`,
+  );
+  const ids = (data.messages ?? []).map((m) => m.id);
+  let best: GmailMessage | null = null;
+  for (const id of ids.slice(0, 10)) {
+    const message = await gmailJson<GmailMessage>(`/users/me/messages/${id}?format=metadata`);
+    if ((message.labelIds ?? []).includes("DRAFT")) continue;
+    if (Number(message.internalDate ?? 0) < afterEpochMs - 60_000) continue;
+    if (!best || Number(message.internalDate ?? 0) > Number(best.internalDate ?? 0)) best = message;
+  }
+  return best;
+}
