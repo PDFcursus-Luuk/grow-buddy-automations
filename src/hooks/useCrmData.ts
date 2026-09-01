@@ -390,6 +390,10 @@ export function usePushDrafts() {
       qc.invalidateQueries({ queryKey: ["email_drafts"] });
       if (result.created > 0) toast.success(`${result.created} concept(en) staan in je mailbox`);
       else if (result.failed > 0) toast.error("Concepten konden niet worden aangemaakt");
+      else if (result.alreadyInMailbox > 0)
+        toast.info("Alles staat al klaar", {
+          description: `${result.alreadyInMailbox} concept(en) staan al als draft in je mailbox.`,
+        });
       else toast.info("Geen concepten om klaar te zetten");
     },
     onError: (e: Error) => toast.error(e.message),
